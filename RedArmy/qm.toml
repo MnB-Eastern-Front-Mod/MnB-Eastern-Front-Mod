@@ -111,7 +111,7 @@ player.deployedTroops[convertedId(mousePrompter)].skill1Timer = 150
 [[patches]]
 [patches.pattern]
 id="rkka:saperi"
-target = "main.lua"
+target = "urb_engine.lua"
 pattern = 'elseif(spec == "engy") then'
 position = "after"
 payload = '''
