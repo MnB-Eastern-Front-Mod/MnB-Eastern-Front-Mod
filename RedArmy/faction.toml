@@ -444,6 +444,16 @@ sound = "brenSound"
 mag_sprite = "ammoBox"
 stats = { action = "auto", class = "lmg", ammo = 250, maxAmmo = 250, range = 375, damage = 95, recoil = 10, bulk = 26, rof = 20, rofTime = 0.10, jam = 10, rgCapable = 0 }
 
+# ---- German Weapons ----
+[[weapons]]
+reskin = "fg42"
+name = "FG42"
+description = "FG42, exotic select-fire platform used by the Fallschirmjäger. Extremely good range and damage."
+sound = "fg42Sound"
+mag_sprite = "genericMag"
+stats = { action = "auto", ammo = 20, maxAmmo = 20, range = 500, damage = 90, recoil = 12, bulk = 9.3, rof = 5, rofTime = 0.1, jam = 7, rgCapable = 1 }
+
+
 # PLACEHOLDER: two more keys a new weapon can have (not decided for any weapon yet).
 #   loot_side = "allied"         # the weapon also drops as our side's loot
 #   pools = ["smg", "grunt"]     # the weapon joins these random pools (see POOLS below)
