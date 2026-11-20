@@ -215,3 +215,76 @@ pattern = 'player\.deployedTroops\[idz\]\.weapon\.tag ~= "stenMKVI" or stenSteal
 position = "at"
 payload = '(player.deployedTroops[idz].weapon.tag ~= "stenMKVI" and not player.deployedTroops[idz].weapon.suppressed) or stenStealth'
 times = 1
+
+# === RANK LOGIC ===
+  # Rank Localisation
+[[patches]]
+[patches.pattern]
+id = "rkka:rankloc_0"
+target = "includes/urb_engine.lua"
+pattern = 'return "Recruit"'
+position = "at"
+payload = 'return "Gvardeyets"'
+[[patches]]
+[patches.pattern]
+id = "rkka:rankloc_1"
+target = "includes/urb_engine.lua"
+pattern = 'return "Private First Class"'
+position = "at"
+payload = 'return "Gv. Yefreitor"'
+[[patches]]
+[patches.pattern]
+id = "rkka:rankloc_2"
+target = "includes/urb_engine.lua"
+pattern = 'return "Corporal"'
+position = "at"
+payload = 'return "Gv. Ml. Serzhant"'
+[[patches]]
+[patches.pattern]
+id = "rkka:rankloc_3"
+target = "includes/urb_engine.lua"
+pattern = 'return "Sergeant"'
+position = "at"
+payload = 'return "Gv. Serzhant"'
+  
+# Promo Localisation
+[[patches]]
+[patches.pattern]
+id = "rkka:promoloc_1"
+target = "includes/localisation.lua"
+pattern = 'rankText_1 = "Promote to Private, soldier gains +5% to his combat skill"'
+position = "at"
+payload = 'rankText_1 = "Promote to Yefreitor: +5 combat skill"'
+[[patches]]
+[patches.pattern]
+id = "rkka:promoloc_2"
+target = "includes/localisation.lua"
+pattern = 'rankText_2 = "Promote to Corporal, soldier gains +10% to his combat skill"'
+position = "at"
+payload = 'rankText_2 = "Promote to Mladshiy Serzhant: +5 combat skill"'
+[[patches]]
+[patches.pattern]
+id = "rkka:promoloc_3"
+target = "includes/localisation.lua"
+pattern = 'rankText_3 = "Promote to Sergeant, soldier gains +15% to his combat skill"'
+position = "at"
+payload = 'rankText_3 = "Promote to Serzhant: +5 combat skill"'
+
+# Combat skill increment worsen
+[[patches]]
+[patches.pattern]
+id="rkka:promoworse_1"
+target = "includes/urb_engine.lua"
+pattern = 'player.deployedTroops[convertedId(specID)].skill = player.deployedTroops[convertedId(specID)].skill + 10'
+position = "at"
+payload = 'player.deployedTroops[convertedId(specID)].skill = player.deployedTroops[convertedId(specID)].skill + 5'
+
+[[patches]]
+[patches.pattern]
+id="rkka:promoworse_2"
+target = "includes/urb_engine.lua"
+pattern = 'player.deployedTroops[convertedId(specID)].skill = player.deployedTroops[convertedId(specID)].skill + 15'
+position = "at"
+payload = 'player.deployedTroops[convertedId(specID)].skill = player.deployedTroops[convertedId(specID)].skill + 5'
+times = 1 # ensure sniper non-interference
+
