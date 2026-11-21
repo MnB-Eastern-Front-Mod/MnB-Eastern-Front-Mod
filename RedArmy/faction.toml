@@ -426,12 +426,12 @@ stats = { action = "auto", ammo = 30, maxAmmo = 30, range = 365, damage = 85, re
 tag = "rd44"
 based_on = "bren"
 name = "RD-44"
-description = "RD-44, prototype 7.62x39mm Degtyarev machine gun. Very good payload (100), with manageable recoil and reduced range and damage."
-# top_sprite = "weapons/top_rd44.png"
-# side_sprite = "weapons/side_rd44.png"
-sound = "brenSound"
-mag_sprite = "ammoBox"
-stats = { action = "auto", class = "lmg", ammo = 100, maxAmmo = 100, range = 350, damage = 85, recoil = 5, bulk = 19, rof = 15, rofTime = 0.0923, jam = 8, rgCapable = 0 }
+description = "RD-44, prototype 7.62x39mm Degtyarev machine gun that will become the legendary RPD. Low bulk and exceptionally low recoil for a machine gun thanks to intermediate ammunition."
+top_sprite = "weapons/top_rd44.png"
+side_sprite = "weapons/side_rd44.png"
+sound = "stg44Sound"
+mag_sprite = "ppshMag"
+stats = { action = "auto", class = "lmg", ammo = 100, maxAmmo = 100, range = 350, damage = 85, recoil = 6, bulk = 17, rof = 15, rofTime = 0.0923, jam = 8, rgCapable = 0 }
 
 [[weapons]]
 tag = "rp46"
