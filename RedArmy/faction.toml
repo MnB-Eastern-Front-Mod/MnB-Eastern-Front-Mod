@@ -416,8 +416,8 @@ tag = "as44"
 based_on = "stg44"
 name = "AS-44"
 description = "AS-44, prototype 7.62x39mm Sudayev assault rifle with a 30-round magazine. Good range and steady automatic fire, but heavy and slow to handle."
-# top_sprite = "weapons/top_as44.png"
-# side_sprite = "weapons/side_as44.png"
+top_sprite = "weapons/top_as44.png"
+side_sprite = "weapons/side_as44.png"
 sound = "stg44Sound"
 mag_sprite = "stgMag"
 stats = { action = "auto", ammo = 30, maxAmmo = 30, range = 365, damage = 85, recoil = 6, bulk = 12, rof = 10, rofTime = 0.10, jam = 15, rgCapable = 0 }
@@ -437,12 +437,12 @@ stats = { action = "auto", class = "lmg", ammo = 100, maxAmmo = 100, range = 350
 tag = "rp46"
 based_on = "m1919"
 name = "Belt-fed DP"
-description = "Degtyarev DP with experimental belt-feed mechanism. Excellent payload (250-round belt), but cumbersome and prone to feed stoppages."
-# top_sprite = "weapons/top_rp46.png"
-# side_sprite = "weapons/side_rp46.png"
+description = "Degtyarev DP with experimental belt-feed receiver converter. Excellent payload (250-round belt), but cumbersome and prone to feed stoppages."
+top_sprite = "weapons/top_rp46.png"
+side_sprite = "weapons/side_rp46.png"
 sound = "brenSound"
 mag_sprite = "ammoBox"
-stats = { action = "auto", class = "lmg", ammo = 250, maxAmmo = 250, range = 375, damage = 95, recoil = 10, bulk = 26, rof = 20, rofTime = 0.10, jam = 10, rgCapable = 0 }
+stats = { action = "auto", class = "lmg", ammo = 250, maxAmmo = 250, range = 375, damage = 95, recoil = 10, bulk = 26, rof = 30, rofTime = 0.10, jam = 10, rgCapable = 0 }
 
 # ---- German Weapons ----
 [[weapons]]
