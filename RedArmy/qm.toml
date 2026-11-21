@@ -32,7 +32,7 @@ id = "rkka:introDate"
 target = "includes/drawFiles.lua"
 pattern = 'love.graphics.printf({{love.math.colorFromBytes(255,255,255,255)}, "June 6, 1944"}, 0, 250, 1280, "center")'
 position = "at"
-payload = '''love.graphics.printf({{love.math.colorFromBytes(255,255,255,255)}, "October 10, 1943"}, 0, 250, 1280, "center")
+payload = '''love.graphics.printf({{love.math.colorFromBytes(255,255,255,255)}, "October 24, 1943"}, 0, 250, 1280, "center")
 '''
 [[patches]] 
 [patches.pattern]
@@ -276,9 +276,18 @@ times = 1 # ensure sniper non-interference
 # LIMONKA IMPLEMENTATION
 # (BY HAND)
 # We should codify exactly what is needed first:
-  # 1, a new LimonkaExplosion for the if-else table in createExplosion()
-  # 2, a new function LimonkaBlast which effects the explosion.
-  # 3, a new 
+  # start all modded prompts from 1001 onwards?
+  # okay now we inject that mousePrompt 1001 calls custom func 
+  # limonkaToss(x,y) 
+  # this has grenade type 1001 because i love consistency 
+  # ai.lua reads grenade type 1001 and then says, hey i know what that is, thats our limonka!!!
+  # over to urb_engine
+  # over now to particle.lua addParticle
+  # particleUpdate(dt) manages the inflight frag
+  # new limonkaBlast in urb_engine
+  # new createExplosion if-else table for limonkaExplosion
+
+
 
 # Strelok-1: Skill --> mousePrompt 1001
 [[patches]]
@@ -447,8 +456,8 @@ payload = '''
     particle.nextFrame = ""
     particle.x = x
     particle.y = y 
-    particle.xoffset = 6
-    particle.yoffset = 18
+    particle.xoffset = 20
+    particle.yoffset = 20
     particle.drag = 1
     particle.alpha = 255
     particle.fade = 0
@@ -543,15 +552,4 @@ payload = '''
 
 # howevr, now limonkablast lasks a solid definition as per 
 
-
-# start all modded prompts from 1001 onwards?
-# okay now we inject that mousePrompt 1001 calls custom func 
-# limonkaToss(x,y) 
-# this has grenade type 1001 because i love consistency 
-# ai.lua reads grenade type 1001 and then says, hey i know what that is, thats our limonka!!!
-# over to urb_engine
-# over now to particle.lua addParticle
-# particleUpdate(dt) manages the inflight frag
-# new limonkaBlast in urb_engine
-# new createExplosion if-else table for limonkaExplosion
 
