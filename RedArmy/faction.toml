@@ -437,12 +437,12 @@ stats = { action = "auto", class = "lmg", ammo = 100, maxAmmo = 100, range = 350
 tag = "rp46"
 based_on = "m1919"
 name = "Belt-fed DP"
-description = "Degtyarev DP with experimental belt-feed mechanism. Excellent payload (250-round belt), but cumbersome and prone to feed stoppages."
-# top_sprite = "weapons/top_rp46.png"
-# side_sprite = "weapons/side_rp46.png"
+description = "Degtyarev DP with experimental belt-feed receiver converter. Excellent payload (250-round belt), but cumbersome and prone to feed stoppages."
+top_sprite = "weapons/top_rp46.png"
+side_sprite = "weapons/side_rp46.png"
 sound = "brenSound"
 mag_sprite = "ammoBox"
-stats = { action = "auto", class = "lmg", ammo = 250, maxAmmo = 250, range = 375, damage = 95, recoil = 10, bulk = 26, rof = 20, rofTime = 0.10, jam = 10, rgCapable = 0 }
+stats = { action = "auto", class = "lmg", ammo = 250, maxAmmo = 250, range = 375, damage = 95, recoil = 10, bulk = 26, rof = 30, rofTime = 0.10, jam = 10, rgCapable = 0 }
 
 # ---- German Weapons ----
 [[weapons]]
