@@ -44,21 +44,6 @@ payload = '''
 love.graphics.printf({{love.math.colorFromBytes(255,255,255,255)}, "Razvedvzvod, 117th Guards Rifle Regiment, 39th Guards Rifle Division, 8th Guards Army, 3rd Ukrainian Front"}, 0, 400, 1280, "center")
 '''
 
-# Strelok-1 Frag
-# currently only copies the Avto-2 frag
-# TODO update a new explosive
-
-[[patches]]
-[patches.pattern]
-id = "rkka:strelok1frag_copy"
-target = "urb_engine.lua"
-pattern = 'buffer(player.deployedTroops[convertedId(specID)], "AP rounds")'
-position = "at"
-payload = '''
-mousePrompt = 2
-mousePrompter = specID
-mousePromptLock = 1
-'''
 
 [[patches]]
 [patches.pattern]
@@ -287,4 +272,286 @@ pattern = 'player.deployedTroops[convertedId(specID)].skill = player.deployedTro
 position = "at"
 payload = 'player.deployedTroops[convertedId(specID)].skill = player.deployedTroops[convertedId(specID)].skill + 5'
 times = 1 # ensure sniper non-interference
+
+# LIMONKA IMPLEMENTATION
+# (BY HAND)
+# We should codify exactly what is needed first:
+  # 1, a new LimonkaExplosion for the if-else table in createExplosion()
+  # 2, a new function LimonkaBlast which effects the explosion.
+  # 3, a new 
+
+# Strelok-1: Skill --> mousePrompt 1001
+[[patches]]
+[patches.pattern]
+id = "rkka:strelok1frag_0"
+target = "urb_engine.lua"
+pattern = 'buffer(player.deployedTroops[convertedId(specID)], "AP rounds")'
+position = "at"
+payload = '''
+mousePrompt = 1001 
+mousePrompter = specID
+mousePromptLock = 1
+'''
+
+# now we r doing the throw range confirm part. 
+# MaxRange now 800. grenadeType 1001.
+[[patches]]
+[patches.pattern]
+id = "rkka:strelok1frag_1"
+target = "urb_engine.lua"
+pattern = 'function performFragToss(x,y)'
+position = "before"
+payload = '''
+function limonkaToss(x,y)
+  local foo = convertedId(mousePrompter) 
+  if(foo ~= -1) then 
+    if(player.deployedTroops[foo].death ~= 1 and player.deployedTroops[foo].health > 10) then
+      player.deployedTroops[foo].targetx = player.deployedTroops[foo].x 
+      player.deployedTroops[foo].targety = player.deployedTroops[foo].y
+      local fragShot = distanceCheck(player.deployedTroops[foo].x, player.deployedTroops[foo].y, x+player.screenx, y+player.screeny)
+      local maxRange = 800 
+      if(hasPerk(player.deployedTroops[foo], 1)) then --slugger for sure
+       maxRange = maxRange * 1.15
+      end
+      if(fragShot < maxRange and player.deployedTroops[foo].pinned ~= 1 ) then 
+        fragShot = fragShot/8 -- rkkamod so error propagates by distance but there is NO need to reuse the same var here like WHAT is the confusion here gang
+        player.deployedTroops[foo].state = "fragThrow1"
+        player.deployedTroops[foo].fragx = x+player.screenx + (randNbr(fragShot*2)-fragShot)
+        player.deployedTroops[foo].fragy = y+player.screeny + (randNbr(fragShot*2)-fragShot) --error yeah
+        player.deployedTroops[foo].grenadeType = 1001
+        player.deployedTroops[foo].stateTimer = 0.1
+        player.deployedTroops[foo].actionTimer = 5
+        player.deployedTroops[foo].targetPointer = 0
+        player.deployedTroops[foo].skill2Timer = 120 --rkkamod lower this
+      else
+        local clone_sfx4 
+        clone_sfx4 = _G["neg"..randNbr(15)]:clone()
+        clone_sfx4:setVolume(stepScale(player.deployedTroops[foo])/2.3)
+        clone_sfx4:setPitch( ((90 + randNbr(10))/100)) 
+        clone_sfx4:play()
+        if(fragShot > 999) then 
+          player.textCue[#player.textCue+1] = {}
+          player.textCue[#player.textCue].name = tooFarTxt
+          player.textCue[#player.textCue].x = x
+          player.textCue[#player.textCue].y = y
+          player.textCue[#player.textCue].alpha = 255
+        end
+      end
+    end
+  end
+  buttoned = 1
+  --reinitialize all that shit
+  abilityDisplay = 0
+  mousePrompter = 0
+  specID = -99
+  mousePrompt = 0
+end
+'''
+
+# freakin, woops
+[[patches]]
+[patches.pattern]
+id = "rkka:strelok1frag_1a"
+target = "main.lua"
+pattern = 'elseif(mousePrompt == 2) then'
+position = "before"
+payload = '''
+elseif(mousePrompt == 1001) then
+  local clone_sfx4 
+  clone_sfx4 = _G["fragReady"..randNbr(14)]:clone()
+  clone_sfx4:setVolume(stepScale(player.deployedTroops[convertedId(mousePrompter)])/2.3)
+  clone_sfx4:setPitch( ((90 + randNbr(10))/100)) 
+  clone_sfx4:play()
+  player.deployedTroops[convertedId(mousePrompter)].targetx = player.deployedTroops[convertedId(mousePrompter)].x
+  player.deployedTroops[convertedId(mousePrompter)].targety = player.deployedTroops[convertedId(mousePrompter)].y
+  player.deployedTroops[convertedId(mousePrompter)].actionTimer = 3
+  player.deployedTroops[convertedId(mousePrompter)].stateTimer = 3
+  player.deployedTroops[convertedId(mousePrompter)].state = "idle"
+  limonkaToss(x,y)''' 
+
+# the parsing of the frag in the frame steps thru frag 1, 2, 3, then releases the correct grenade.
+[[patches]]
+[patches.pattern]
+id = "rkka:strelok1frag_2"
+target = "ai.lua"
+pattern = 'elseif(player.deployedTroops[i].grenadeType == 14) then '
+position = "before"
+payload = '''
+elseif(player.deployedTroops[i].grenadeType == 1001) then
+  throwLimonka(i, nil, player.deployedTroops[i].fragx , player.deployedTroops[i].fragy)
+'''
+
+# nextphase: throwLimonka() in engine.
+[[patches]]
+[patches.pattern]
+id = "rkka:strelok1frag_3"
+target = "urb_engine.lua"
+pattern = 'function throwFrag(dude, gear, x, y)'
+position = "before"
+payload = '''
+function throwLimonka(dude, gear, x, y)
+    print("TOSSING LIMONKA")
+    player.deployedTroops[dude].rotation = math.atan2(player.deployedTroops[dude].y -(y ), player.deployedTroops[dude].x-(x ))+ 1.5  
+  newPart = {}
+    addParticle(newPart, "limonka",  player.deployedTroops[dude].x, player.deployedTroops[dude].y, player.deployedTroops[dude].rotation)
+
+  table.insert(player.particles, newPart)
+  if(player.deployedTroops[dude].faction == 1) then 
+    player.particles[#player.particles].targetx = x 
+    player.particles[#player.particles].targety = y 
+  else
+    player.particles[#player.particles].targetx = x 
+    player.particles[#player.particles].targety = y 
+  end
+  -- set the mid point 
+  player.particles[#player.particles].lob = distanceCheck(player.particles[#player.particles].x, player.particles[#player.particles].y, player.particles[#player.particles].targetx, player.particles[#player.particles].targety)
+  --if the guy is inside we prevent the grande to bounce out
+  if(insideBunker(player.deployedTroops[dude]) or coveredBuilding(player.deployedTroops[dude])) then
+    player.particles[#player.particles].wallImmune = 0.3
+  end
+ -- print("particle type "..player.particles[#player.particles].typez.." lob is "..player.particles[#player.particles].lob)
+  -- play animation
+  player.deployedTroops[dude].state = "idle"
+  player.deployedTroops[dude].aim = 0
+  --player.deployedTroops[dude].pinned = 1
+  player.deployedTroops[dude].stateTimer = 0.5
+  player.deployedTroops[dude].actionTimer = 1
+  player.deployedTroops[dude].targetPointer = 0
+  player.deployedTroops[dude].temporaryStop = 1
+  player.deployedTroops[dude].frags = player.deployedTroops[dude].frags - 1
+  -- resets
+  clone_sfx = tossFrag:clone()
+  clone_sfx:setVolume(stepScale(player.deployedTroops[dude]))
+  clone_sfx:play()
+end
+'''
+# back to the particle engine!!!
+# note velocity cut down to 450 px
+[[patches]]
+[patches.pattern]
+id = "rkka:strelok1frag_4"
+target = "particlesSystem.lua"
+pattern = '  elseif(typez == "fragGrenade2") then '
+position = "before"
+payload = '''
+  elseif(typez == "limonka") then
+    --particle, typez, x, y, rotationz
+    particle.typez = "limonka"
+    particle.sprite = "limonka"
+    particle.velocity = 450
+    particle.rotationz = rotationz
+    particle.innerRotation = 0
+    particle.spin = randNbr(40)/10
+    particle.lifeSpan = 4
+    particle.faction = 0
+    particle.nextFrame = ""
+    particle.x = x
+    particle.y = y 
+    particle.xoffset = 6
+    particle.yoffset = 18
+    particle.drag = 1
+    particle.alpha = 255
+    particle.fade = 0
+    particle.expand = 0
+    --will be assigned in the action 
+    particle.targetx = 0
+    particle.targety = 0
+    particle.lob = 0
+    particle.immunity = 1
+'''
+# make that shit spin
+[[patches]]
+[patches.pattern]
+id = "rkka:strelok1frag_5"
+target = "particlesSystem.lua"
+pattern = 'if(ticle.typez == "fragGrenade" or ticle.typez == "flarePart" or ticle.typez == "contactGrenade" or ticle.typez == "redFlarePart"or ticle.typez == "rifleGrenade" or ticle.typez == "leuchtGrenade" or ticle.typez == "rocketGrenade" or ticle.typez == "stielgranate") then'
+position = "at"
+payload = '''
+if(ticle.typez == "fragGrenade" or ticle.typez == "limonka" or ticle.typez == "flarePart" or ticle.typez == "contactGrenade" or ticle.typez == "redFlarePart"or ticle.typez == "rifleGrenade" or ticle.typez == "leuchtGrenade" or ticle.typez == "rocketGrenade" or ticle.typez == "stielgranate") then 
+'''
+
+# Biden BLASTTTTTTT
+[[patches]]
+[patches.pattern]
+id = "rkka:strelok1frag_6"
+target = "particlesSystem.lua"
+pattern = 'fragBlast(foox,fooy)'
+position = "after"
+payload = '''
+elseif(ticle.sprite == "limonka") then
+  limonkaBlast(ticle.x, ticle.y)
+  print("LEMON 1")
+'''
+# shest' syeee- (gets arrested by a SMERSH agent for espionage and sent to a penal batallion)
+[[patches]]
+[patches.pattern]
+id = "rkka:strelok1frag_7"
+target = "urb_engine.lua"
+pattern = 'function fragBlast(x,y)'
+position = "before"
+payload = '''
+function limonkaBlast(x,y)
+  createExplosion("limonkaExplosion", x, y)
+  player.tension = 40
+  print("LEMON 2")
+end
+'''
+
+[[patches]]
+[patches.pattern]
+id = "rkka:strelok1frag_7a"
+target = "particlesSystem.lua"
+pattern = 'if(ticle.typez == "fragGrenade") then '
+position = "at"
+payload = '''
+if(ticle.typez == "fragGrenade" or ticle.typez == "limonka") then 
+'''
+
+[[patches]]
+[patches.pattern]
+id = "rkka:strelok1frag_8"
+target = "urb_engine.lua"
+pattern = '  elseif(tag == "flakExplosion") then'
+position = "before"
+payload = '''
+  elseif(tag == "limonkaExplosion") then
+    print("LEMON 3")
+    clone_sfx = _G["fragSound"..randNbr(3)]:clone()
+    player.explosions[#player.explosions+1] = {}
+    player.explosions[#player.explosions].tag = tag
+    player.explosions[#player.explosions].x = x
+    player.explosions[#player.explosions].y = y
+    player.explosions[#player.explosions].size = 1
+    player.explosions[#player.explosions].atRadius = 20
+    player.explosions[#player.explosions].atDamage = 50
+    player.explosions[#player.explosions].blastRadius = 75
+    player.explosions[#player.explosions].blastDamage = 40
+    player.explosions[#player.explosions].demoRadius = 10
+    player.explosions[#player.explosions].fragRadius = 150
+    player.explosions[#player.explosions].fragDamage = 75
+    player.explosions[#player.explosions].currentFrame = 1
+    player.explosions[#player.explosions].moraleHit = 20
+    player.explosions[#player.explosions].stunRange = 125
+    player.explosions[#player.explosions].stunTime = 5
+    player.explosions[#player.explosions].dad = dad
+    createCrater(player.explosions[#player.explosions], 5)
+'''
+
+# what's next? of course! creating the explosion. 
+
+
+
+# howevr, now limonkablast lasks a solid definition as per 
+
+
+# start all modded prompts from 1001 onwards?
+# okay now we inject that mousePrompt 1001 calls custom func 
+# limonkaToss(x,y) 
+# this has grenade type 1001 because i love consistency 
+# ai.lua reads grenade type 1001 and then says, hey i know what that is, thats our limonka!!!
+# over to urb_engine
+# over now to particle.lua addParticle
+# particleUpdate(dt) manages the inflight frag
+# new limonkaBlast in urb_engine
+# new createExplosion if-else table for limonkaExplosion
 
