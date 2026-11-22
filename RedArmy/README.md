@@ -7,9 +7,9 @@ It is a template: the structure is complete, much of the content is still placeh
 
 | File or folder | What it is |
 |---|---|
-| `mod.json` | Who the mod is: id, name, version. |
-| `faction.toml` | The army: names, text, weapons, classes, vehicles. Most work happens here. |
-| `qm.toml` | Code patches for things `faction.toml` can't do. Holds the primary AT rifle and suppressed weapon patches. |
+| `mod.json` | Who the mod is: id, name, version, and the QuarterMaster features it needs. |
+| `faction.toml` | The army: names, text, ranks, weapons, classes, grenades, skills, vehicles, image sizes. Most work happens here. |
+| `qm.toml` | Code patches for things `faction.toml` can't do: intro text, promotion gains, primary AT rifles, suppressed weapons. |
 | `hooks.lua` | Small Lua hooks. Marks the primary AT rifles and the suppressed weapons. |
 | `names/` | Soldier name lists, one name per line. |
 | `units/<unit>/` | Soldier art, one image per animation frame (`idle.png`, `aim.png` ...). |
@@ -29,11 +29,12 @@ Real so far: faction header, 29 weapons with stats and text, 12 class names with
 unlocks, battle condition renames, 7 vehicle names, partisan weapon pool.
 
 Still placeholder: name lists, all unit art, most weapon art (19 sprites exist), all sounds and
-voices, vehicle art, class descriptions, bonuses and icons, hooks and patches.
+voices, vehicle art, class descriptions, most bonuses and icons.
 
 ## Checking your work
 
-Run this after every change (`qm.exe` ships with QuarterMaster):
+The mod needs QuarterMaster 2.2.0 or newer (its grenades and skills use the loader's ordnance
+skill and rank helpers). Run this after every change (`qm.exe` ships with QuarterMaster):
 
 ```
 qm faction check RedArmy

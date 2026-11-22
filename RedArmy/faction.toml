@@ -68,11 +68,20 @@ playerSkillText_12 = "Frunzentsy: You can reroll the 3 command abilities offered
 
 lootText_ration = "Tushonka, +5 to max health"
 lootText_molotov = "An incendiary bottle. Right click to use once looted."
-# PLACEHOLDER: the doc's Guards ranks. Only the promote buttons are text; the rank names shown
-# on soldiers (Recruit, Private, Corporal ...) are in game code and need a qm.toml patch.
-# rankText_1 = "Promote to Gv. yefreitor, soldier gains +5% to his combat skill"
-# rankText_2 = "Promote to Gv. Ml. Serzhant, soldier gains +10% to his combat skill"
-# rankText_3 = "Promote to Gv. Serzhant, soldier gains +15% to his combat skill"
+# The promote buttons. The rank names are in [ranks] below; the smaller combat skill gains
+# these texts describe are patched in qm.toml.
+rankText_1 = "Promote to Yefreitor: +5 combat skill"
+rankText_2 = "Promote to Mladshiy Serzhant: +5 combat skill"
+rankText_3 = "Promote to Serzhant: +5 combat skill"
+
+
+# ============================== RANKS ==============================
+# REAL: the doc's Guards ranks. New soldiers start at rank 0; a soldier with no rank yet
+# (rare) gets the first name too.
+[ranks]
+soldier = ["Gvardeyets", "Gv. Yefreitor", "Gv. Ml. Serzhant", "Gv. Serzhant"]
+# officer = ["Ml. Leytenant", "Leytenant", "Kapitan", "Mayor"]     # PLACEHOLDER: still the game's
+# sarge = "Starshina"                                             # PLACEHOLDER: the Sarge's title, still "Sarge"
 
 
 # ============================== UNIT ART ==============================
@@ -503,14 +512,14 @@ scopedEnfield = "scopedMosinPE"
 dpMag = "misc/dpMag.png"
 ppsMag = "misc/ppsMag.png"
 dtMag = "misc/dtMag.png"
-limonka = "misc/limonka.png"
 frag = "misc/rg42.png"
+# Our rank stripes and AT badge have other shapes than the game's (its stripes are 32 wide),
+# so each gives the size it is shown at. rank_0 already matches.
 rank_0 = "misc/rank_0.png"
-rank_1 = "misc/rank_1.png"
-rank_2 = "misc/rank_2.png"
-rank_3 = "misc/rank_3.png"
-spec_sapper = "icons/spec_AT.png"
-rpg43 = "misc/rpg43.png"
+rank_1 = { file = "misc/rank_1.png", size = [18, 22] }
+rank_2 = { file = "misc/rank_2.png", size = [18, 22] }
+rank_3 = { file = "misc/rank_3.png", size = [18, 22] }
+spec_sapper = { file = "icons/spec_AT.png", size = [46, 47] }
 rifle_skill_1 = "icons/rifle_skill_1.png"
 light_skill_2 = "icons/light_skill_2.png"
 
@@ -532,7 +541,7 @@ name = "Strelok"
 start_weapon = "svt38"
 unlocks = ["svt40", "avs36", "avt40"]
 skills = [
-  "Limonka, Throws an F-1 defensive grenade",                          # doesn't do shit at the moment
+  "Limonka, Throws an F-1 defensive grenade",                          # see ORDNANCE
   "B-32 Ammunition, standard-issue API rounds effective against light vehicles",
   "Senior Rifleman's Rally, nearby soldiers are harder to pin"
 ]
@@ -581,6 +590,8 @@ skills = [
 name = "Assault Sapper"
 start_weapon = "mosin38"
 unlocks = ["mosin44", "pps", "ppshBox"]
+# Replaces the vanilla bonus, so the vanilla mine detection x3 is repeated here.
+bonus = { max_health = 20, speed = -5, mine_detect_range = 3 }
 
 [classes.scout]              # vanilla Scout
 name = "Razvedchik"
@@ -612,6 +623,52 @@ unlocks = ["ptrd", "boysAT", "ptrs"]         # primary AT rifles, see the anti-t
 name = "Diversant"
 start_weapon = "shotgun"
 unlocks = ["ppshObrez", "mp40", "stg44"]
+
+
+# ============================== ORDNANCE ==============================
+# Grenades of our own. QuarterMaster throws them as the game's frag, with our image and blast.
+# REAL: F-1 numbers and the 20% shorter throw (800, vanilla 1000) from Moto; the RPG-43 uses
+# the bazooka's explosion (Discord, 2026-11-20). Cooldowns from the planning doc.
+# The skill keeps its text from [classes.<slot>] skills and its icon from [sprites].
+
+[[explosions]]
+id = "f1"
+based_on = "frag"                 # the vanilla frag's numbers, then these
+at_radius = 20
+at_damage = 50
+blast_damage = 40                 # only 60 g of TNT
+frag_radius = 150
+frag_damage = 75
+morale_hit = 20
+stun_range = 125
+
+[[ordnance]]
+id = "limonka"
+sprite = "misc/limonka.png"
+explosion = "f1"
+range = 800
+cooldown = 90
+skill = { class = "rifle", slot = 1 }      # the Strelok's first skill (vanilla: AP rounds)
+
+[[ordnance]]
+id = "rpg43"
+name = "RPG-43"
+description = "Throws a shaped charge anti-tank grenade"
+sprite = "misc/rpg43.png"
+explosion = "faust"               # the bazooka's explosion
+range = 800
+cooldown = 150
+spin = 0                          # no tumbling: flies pointing the way it was thrown
+skill = { class = "sapper", slot = 1 }     # the AT Rifleman's first skill (vanilla: sandbags)
+
+
+# ============================== SKILLS ==============================
+# Changes to what a class skill does. Text only goes in [classes.<slot>] skills.
+
+[[skills]]
+class = "gunner"
+slot = 1                          # the bipod
+cooldown = 10                     # planning doc: "functionally like no cooldown"
 
 
 # ============================== VOICES ==============================
@@ -691,6 +748,7 @@ name = "37mm 61-K"
 
 
 # ============================== HOOKS ==============================
-# A Lua file for small things this file can't say. PLACEHOLDER: hooks.lua does nothing yet.
+# A Lua file for small things this file can't say. It marks the primary AT rifles and the
+# suppressed weapons for the patches in qm.toml.
 [hooks]
 lua = "hooks.lua"

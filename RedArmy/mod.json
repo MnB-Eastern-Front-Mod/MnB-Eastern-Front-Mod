@@ -8,5 +8,6 @@
   "category": "Content",
   "tags": ["Faction", "Eastern Front", "Red Army"],
   "load_priority": 50,
-  "game_version": ">=0.5.3"
+  "game_version": ">=0.5.3",
+  "qm_features": ["short_patches", "apply_as", "ordnance", "skills", "ranks", "faction_sprite_sizes"]
 }
