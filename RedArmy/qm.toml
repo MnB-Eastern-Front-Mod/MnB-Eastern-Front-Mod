@@ -22,7 +22,9 @@ rank_1 = { size = [18, 22] }
 rank_2 = { size = [18, 22] }
 rank_3 = { size = [18, 22] }
 spec_sapper = {size = [46, 47]}
-# not done yet: this still needs to replace custom offsets for each rank 1 thru 3!!!
+# These keep our images at their own size. Without them the game stretches each one to the
+# size of the vanilla image it replaces (vanilla ranks are 32 wide). No position fixes are
+# needed: the game centres every rank badge on its spot, whatever its size.
 
 
 [[patches]]
@@ -53,26 +55,12 @@ love.graphics.printf({{love.math.colorFromBytes(255,255,255,255)}, "Razvedvzvod,
 '''
 
 
-[[patches]]
-[patches.pattern]
-id = "rkka:strelok1frag_time"
-target = "urb_engine.lua"
-pattern = 'player.deployedTroops[convertedId(specID)].skill1Timer = 180'
-position = "at"
-payload = '''
-player.deployedTroops[convertedId(specID)].skill1Timer = 90
-'''
-times = 1 # be very careful with this because theres tech 2 timers which r set to 3 mins long? and it could fuck up the other one im not sure it does further testing warranted s89
-# I need to somehow replace the first skill of the Strelok with the Limonka...
-# could I patch it?
-
-
 # bipod cooldown 120 -> 10 
 # just for you, moto
 [[patches]]
 [patches.pattern]
 id = "rkka:fastbipod"
-target = "urb_engine.lua"
+target = "includes/urb_engine.lua"
 pattern = 'clone_sfx4 = _G["bipodTalk"..randNbr(6)]:clone()'
 position = "after"
 payload = '''
@@ -83,18 +71,8 @@ player.deployedTroops[convertedId(specID)].skill1Timer = 10
 
 [[patches]]
 [patches.pattern]
-id="rkka:ATnadetimer"
-target = "main.lua"
-pattern = 'player.deployedTroops[convertedId(mousePrompter)].skill1Timer = 300'
-position = "at"
-payload = '''
-player.deployedTroops[convertedId(mousePrompter)].skill1Timer = 150
-'''
-
-[[patches]]
-[patches.pattern]
 id="rkka:saperi"
-target = "urb_engine.lua"
+target = "includes/urb_engine.lua"
 pattern = 'elseif(spec == "engy") then'
 position = "after"
 payload = '''
@@ -266,10 +244,18 @@ payload = 'player.deployedTroops[convertedId(specID)].skill = player.deployedTro
 [patches.pattern]
 id="rkka:promoworse_2"
 target = "includes/urb_engine.lua"
-pattern = 'player.deployedTroops[convertedId(specID)].skill = player.deployedTroops[convertedId(specID)].skill + 15'
+# with the rank line, so the Sniper's +15 class bonus further down is left alone
+pattern = """
+elseif(player.deployedTroops[convertedId(specID)].rank == 3) then
+player.deployedTroops[convertedId(specID)].skill = player.deployedTroops[convertedId(specID)].skill + 15
+"""
 position = "at"
-payload = 'player.deployedTroops[convertedId(specID)].skill = player.deployedTroops[convertedId(specID)].skill + 5'
-times = 1 # ensure sniper non-interference
+match_indent = true
+times = 1
+payload = """
+elseif(player.deployedTroops[convertedId(specID)].rank == 3) then
+  player.deployedTroops[convertedId(specID)].skill = player.deployedTroops[convertedId(specID)].skill + 5
+"""
 
 # LIMONKA IMPLEMENTATION
 # (BY HAND)
@@ -288,24 +274,42 @@ times = 1 # ensure sniper non-interference
 
 
 # Strelok-1: Skill --> mousePrompt 1001
+# Replaces the whole AP rounds block, so its buff sound and voice line don't play and the
+# cooldown doesn't start on the click. The cooldown starts at the throw, in limonkaToss.
 [[patches]]
 [patches.pattern]
 id = "rkka:strelok1frag_0"
-target = "urb_engine.lua"
-pattern = 'buffer(player.deployedTroops[convertedId(specID)], "AP rounds")'
+target = "includes/urb_engine.lua"
+pattern = """
+buffer(player.deployedTroops[convertedId(specID)], "AP rounds")
+-- play a lil buff sound
+local buff_sfx2
+--load the proper sound for the gun
+buff_sfx2 = buffSound:clone()
+buff_sfx2:play()
+player.deployedTroops[convertedId(specID)].skill1Timer = 180
+--
+local clone_sfx4
+clone_sfx4 = _G["apTalk"..randNbr(6)]:clone()
+clone_sfx4:setVolume(stepScale(player.deployedTroops[convertedId(specID)])/3)
+clone_sfx4:setPitch( ((90 + randNbr(10))/100))
+clone_sfx4:play()
+"""
 position = "at"
-payload = '''
-mousePrompt = 1001 
+match_indent = true
+times = 1
+payload = """
+mousePrompt = 1001
 mousePrompter = specID
 mousePromptLock = 1
-'''
+"""
 
 # now we r doing the throw range confirm part. 
 # MaxRange now 800. grenadeType 1001.
 [[patches]]
 [patches.pattern]
 id = "rkka:strelok1frag_1"
-target = "urb_engine.lua"
+target = "includes/urb_engine.lua"
 pattern = 'function performFragToss(x,y)'
 position = "before"
 payload = '''
@@ -329,7 +333,7 @@ function limonkaToss(x,y)
         player.deployedTroops[foo].stateTimer = 0.1
         player.deployedTroops[foo].actionTimer = 5
         player.deployedTroops[foo].targetPointer = 0
-        player.deployedTroops[foo].skill2Timer = 120 --rkkamod lower this
+        player.deployedTroops[foo].skill1Timer = 90 -- Limonka cooldown (seconds), Strelok skill 1
       else
         local clone_sfx4 
         clone_sfx4 = _G["neg"..randNbr(15)]:clone()
@@ -380,7 +384,7 @@ elseif(mousePrompt == 1001) then
 [[patches]]
 [patches.pattern]
 id = "rkka:strelok1frag_2"
-target = "ai.lua"
+target = "includes/ai.lua"
 pattern = 'elseif(player.deployedTroops[i].grenadeType == 14) then '
 position = "before"
 payload = '''
@@ -392,12 +396,11 @@ elseif(player.deployedTroops[i].grenadeType == 1001) then
 [[patches]]
 [patches.pattern]
 id = "rkka:strelok1frag_3"
-target = "urb_engine.lua"
+target = "includes/urb_engine.lua"
 pattern = 'function throwFrag(dude, gear, x, y)'
 position = "before"
 payload = '''
 function throwLimonka(dude, gear, x, y)
-    print("TOSSING LIMONKA")
     player.deployedTroops[dude].rotation = math.atan2(player.deployedTroops[dude].y -(y ), player.deployedTroops[dude].x-(x ))+ 1.5  
   newPart = {}
     addParticle(newPart, "limonka",  player.deployedTroops[dude].x, player.deployedTroops[dude].y, player.deployedTroops[dude].rotation)
@@ -437,18 +440,20 @@ end
 [[patches]]
 [patches.pattern]
 id = "rkka:strelok1frag_4"
-target = "particlesSystem.lua"
+target = "includes/particlesSystem.lua"
 pattern = '  elseif(typez == "fragGrenade2") then '
 position = "before"
 payload = '''
   elseif(typez == "limonka") then
     --particle, typez, x, y, rotationz
-    particle.typez = "limonka"
+    -- typez "fragGrenade" gives it the vanilla frag's flight: size capped during the lob,
+    -- no growth on landing, bounce sound. The sprite picks the blast (see strelok1frag_6).
+    particle.typez = "fragGrenade"
     particle.sprite = "limonka"
     particle.velocity = 450
     particle.rotationz = rotationz
     particle.innerRotation = 0
-    particle.spin = randNbr(40)/10
+    particle.spin = randNbr(10)/10 -- vanilla frag spin
     particle.lifeSpan = 4
     particle.faction = 0
     particle.nextFrame = ""
@@ -467,51 +472,43 @@ payload = '''
     particle.immunity = 1
 '''
 # Biden BLASTTTTTTT
+# Both grenades are "fragGrenade" particles, so the game's frag blast list picks the blast by
+# sprite, like it does for the molotov and the smoke grenades.
 [[patches]]
 [patches.pattern]
 id = "rkka:strelok1frag_6"
-target = "particlesSystem.lua"
+target = "includes/particlesSystem.lua"
 pattern = 'fragBlast(foox,fooy)'
 position = "after"
+times = 1
 payload = '''
 elseif(ticle.sprite == "limonka") then
-  limonkaBlast(ticle.x, ticle.y)
-  print("LEMON 1")
+  limonkaBlast(foox,fooy)
+elseif(ticle.sprite == "rpg43") then
+  rpg43Blast(foox,fooy)
 '''
 # shest' syeee- (gets arrested by a SMERSH agent for espionage and sent to a penal batallion)
 [[patches]]
 [patches.pattern]
 id = "rkka:strelok1frag_7"
-target = "urb_engine.lua"
+target = "includes/urb_engine.lua"
 pattern = 'function fragBlast(x,y)'
 position = "before"
 payload = '''
 function limonkaBlast(x,y)
   createExplosion("limonkaExplosion", x, y)
   player.tension = 40
-  print("LEMON 2")
 end
 '''
 
 [[patches]]
 [patches.pattern]
-id = "rkka:strelok1frag_7a"
-target = "particlesSystem.lua"
-pattern = 'if(ticle.typez == "fragGrenade") then '
-position = "at"
-payload = '''
-if(ticle.typez == "fragGrenade" or ticle.typez == "limonka") then 
-'''
-
-[[patches]]
-[patches.pattern]
 id = "rkka:strelok1frag_8"
-target = "urb_engine.lua"
+target = "includes/urb_engine.lua"
 pattern = '  elseif(tag == "flakExplosion") then'
 position = "before"
 payload = '''
   elseif(tag == "limonkaExplosion") then
-    print("LEMON 3")
     clone_sfx = _G["fragSound"..randNbr(3)]:clone()
     player.explosions[#player.explosions+1] = {}
     player.explosions[#player.explosions].tag = tag
@@ -537,7 +534,7 @@ payload = '''
 [[patches]]
 [patches.pattern]
 id = "rkka:ATnade_0"
-target = "urb_engine.lua"
+target = "includes/urb_engine.lua"
 pattern = 'mousePrompt = 14'
 position = "at"
 payload = '''
@@ -569,7 +566,7 @@ elseif(mousePrompt == 1002) then
 [[patches]]
 [patches.pattern]
 id = "rkka:ATnade_2"
-target = "urb_engine.lua"
+target = "includes/urb_engine.lua"
 pattern = 'function performFragToss(x,y)'
 position = "before"
 payload = '''
@@ -593,7 +590,7 @@ function Rpg43Toss(x,y)
         player.deployedTroops[foo].stateTimer = 0.1
         player.deployedTroops[foo].actionTimer = 5
         player.deployedTroops[foo].targetPointer = 0
-        player.deployedTroops[foo].skill2Timer = 120 --rkkamod lower this
+        player.deployedTroops[foo].skill1Timer = 150 -- RPG-43 cooldown (seconds), AT Rifleman skill 1
       else
         local clone_sfx4 
         clone_sfx4 = _G["neg"..randNbr(15)]:clone()
@@ -624,7 +621,7 @@ end
 [[patches]]
 [patches.pattern]
 id = "rkka:ATnade_3"
-target = "ai.lua"
+target = "includes/ai.lua"
 pattern = 'elseif(player.deployedTroops[i].grenadeType == 14) then '
 position = "before"
 payload = '''
@@ -636,12 +633,11 @@ elseif(player.deployedTroops[i].grenadeType == 1002) then
 [[patches]]
 [patches.pattern]
 id = "rkka:ATnade_4"
-target = "urb_engine.lua"
+target = "includes/urb_engine.lua"
 pattern = 'function throwFrag(dude, gear, x, y)'
 position = "before"
 payload = '''
 function throwRpg43(dude, gear, x, y)
-    print("TOSSING RPG")
     player.deployedTroops[dude].rotation = math.atan2(player.deployedTroops[dude].y -(y ), player.deployedTroops[dude].x-(x ))+ 1.5  
   newPart = {}
     addParticle(newPart, "rpg43",  player.deployedTroops[dude].x, player.deployedTroops[dude].y, player.deployedTroops[dude].rotation)
@@ -678,17 +674,19 @@ end
 [[patches]]
 [patches.pattern]
 id = "rkka:ATnade_5"
-target = "particlesSystem.lua"
+target = "includes/particlesSystem.lua"
 pattern = '  elseif(typez == "fragGrenade2") then '
 position = "before"
 payload = '''
   elseif(typez == "rpg43") then
     --particle, typez, x, y, rotationz
-    particle.typez = "rpg43"
+    -- typez "fragGrenade": the vanilla frag's flight (see the limonka). No spin: it flies
+    -- pointing the way it was thrown, so the picture should point up in rpg43.png.
+    particle.typez = "fragGrenade"
     particle.sprite = "rpg43"
     particle.velocity = 450
     particle.rotationz = rotationz
-    particle.innerRotation = 0
+    particle.innerRotation = rotationz
     particle.spin = 0
     particle.lifeSpan = 4
     particle.faction = 0
@@ -709,77 +707,43 @@ payload = '''
 '''
 [[patches]]
 [patches.pattern]
-id = "rkka:GRENADES_IN_GENERAL"
-target = "particlesSystem.lua"
-pattern = 'if(ticle.typez == "fragGrenade" or ticle.typez == "flarePart" or ticle.typez == "contactGrenade" or ticle.typez == "redFlarePart"or ticle.typez == "rifleGrenade" or ticle.typez == "leuchtGrenade" or ticle.typez == "rocketGrenade" or ticle.typez == "stielgranate") then'
-position = "at"
-payload = '''
-if(ticle.typez == "fragGrenade" or ticle.typez == "limonka" or ticle.typez == "rpg43" or ticle.typez == "flarePart" or ticle.typez == "contactGrenade" or ticle.typez == "redFlarePart"or ticle.typez == "rifleGrenade" or ticle.typez == "leuchtGrenade" or ticle.typez == "rocketGrenade" or ticle.typez == "stielgranate") then 
-'''
-
-[[patches]]
-[patches.pattern]
-id = "rkka:ATnade_7"
-target = "particlesSystem.lua"
-pattern = 'elseif(ticle.typez == "contactGrenade") then'
-position = "before"
-payload = '''
-elseif(ticle.typez == "rpg43") then
-  rpg43Blast(ticle.x, ticle.y)
-  print("RPG 1")
-'''
-[[patches]]
-[patches.pattern]
 id = "rkka:ATnade_8"
-target = "urb_engine.lua"
+target = "includes/urb_engine.lua"
 pattern = 'function fragBlast(x,y)'
 position = "before"
 payload = '''
 function rpg43Blast(x,y)
   createExplosion("rpg43explosion", x, y)
   player.tension = 40
-  print("RPG 2")
 end
 '''
 
 [[patches]]
 [patches.pattern]
-id = "rkka:ATnade_9"
-target = "particlesSystem.lua"
-pattern = 'elseif(ticle.typez == "rocketGrenade") then '
-position = "before"
-payload = '''
-  elseif(ticle.types == "rpg43") then
-    createExplosion("rpg43explosion", ticle.x, ticle.y)
-    table.remove(player.particles, i)
-'''
-
-[[patches]]
-[patches.pattern]
 id = "rkka:ATnade_10"
-target = "urb_engine.lua"
+target = "includes/urb_engine.lua"
 pattern = '  elseif(tag == "flakExplosion") then'
 position = "before"
 payload = '''
   elseif(tag == "rpg43explosion") then
-    print("LEMON 3")
+    -- The bazooka's explosion (vanilla "faustExplosion"), as agreed on Discord 2026-11-20.
     clone_sfx = _G["fragSound"..randNbr(3)]:clone()
     player.explosions[#player.explosions+1] = {}
     player.explosions[#player.explosions].tag = tag
     player.explosions[#player.explosions].x = x
     player.explosions[#player.explosions].y = y
     player.explosions[#player.explosions].size = 1
-    player.explosions[#player.explosions].atRadius = 20
-    player.explosions[#player.explosions].atDamage = 50
-    player.explosions[#player.explosions].blastRadius = 75
-    player.explosions[#player.explosions].blastDamage = 40
-    player.explosions[#player.explosions].demoRadius = 10
-    player.explosions[#player.explosions].fragRadius = 150
-    player.explosions[#player.explosions].fragDamage = 75
+    player.explosions[#player.explosions].blastRadius = 50
+    player.explosions[#player.explosions].blastDamage = 20
+    player.explosions[#player.explosions].atRadius = 50
+    player.explosions[#player.explosions].atDamage = 350
+    player.explosions[#player.explosions].demoRadius = 25
+    player.explosions[#player.explosions].fragRadius = 50
+    player.explosions[#player.explosions].fragDamage = 25
     player.explosions[#player.explosions].currentFrame = 1
-    player.explosions[#player.explosions].moraleHit = 20
-    player.explosions[#player.explosions].stunRange = 125
+    player.explosions[#player.explosions].moraleHit = 10
+    player.explosions[#player.explosions].stunRange = 50
     player.explosions[#player.explosions].stunTime = 5
     player.explosions[#player.explosions].dad = dad
-    createCrater(player.explosions[#player.explosions], 25)
+    createCrater(player.explosions[#player.explosions], 4)
 '''

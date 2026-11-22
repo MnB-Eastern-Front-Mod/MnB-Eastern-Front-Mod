@@ -496,6 +496,8 @@ matchGarand = "svt38"
 scopedGarand = "scopedSvt40"
 scopedSpringfield = "scopedMosinPU"
 scopedEnfield = "scopedMosinPE"
+# PLACEHOLDER: not decided.
+# t22 = "as44"
 
 [sprites]
 dpMag = "misc/dpMag.png"
@@ -512,9 +514,6 @@ rpg43 = "misc/rpg43.png"
 rifle_skill_1 = "icons/rifle_skill_1.png"
 light_skill_2 = "icons/light_skill_2.png"
 
-
-# PLACEHOLDER: not decided. Until these are set, the game still hands out BARs and Thompsons.
-# t22 = "as44"
 
 # ============================== CLASSES ==============================
 # The game has 12 class slots. We can rename and rebalance them, not add new ones.
