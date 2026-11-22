@@ -503,6 +503,15 @@ ppsMag = "misc/ppsMag.png"
 dtMag = "misc/dtMag.png"
 limonka = "misc/limonka.png"
 frag = "misc/rg42.png"
+rank_0 = "misc/rank_0.png"
+rank_1 = "misc/rank_1.png"
+rank_2 = "misc/rank_2.png"
+rank_3 = "misc/rank_3.png"
+spec_sapper = "icons/spec_AT.png"
+rpg43 = "misc/rpg43.png"
+rifle_skill_1 = "icons/rifle_skill_1.png"
+light_skill_2 = "icons/light_skill_2.png"
+
 
 # PLACEHOLDER: not decided. Until these are set, the game still hands out BARs and Thompsons.
 # t22 = "as44"

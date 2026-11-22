@@ -17,6 +17,14 @@ version = "1.0.0"
 # print("[Eastern Front] loaded")
 # '''
 
+[sprites] #please please please do what i want
+rank_1 = { size = [18, 22] }
+rank_2 = { size = [18, 22] }
+rank_3 = { size = [18, 22] }
+spec_sapper = {size = [46, 47]}
+# not done yet: this still needs to replace custom offsets for each rank 1 thru 3!!!
+
+
 [[patches]]
 [patches.pattern]
 id = "rkka:hello"
@@ -72,16 +80,6 @@ player.deployedTroops[convertedId(specID)].skill1Timer = 10
 '''
 
 
-#AT rifleman 1 now throws a frag - PLACEHOLDER until replacing mousePrompt 14 with an AT grenade or other method of getting that frag.
-[[patches]]
-[patches.pattern]
-id="rkka:ATnadeskill"
-target = "urb_engine.lua"
-pattern = 'mousePrompt = 14'
-position = "at"
-payload = '''
-mousePrompt = 2
-'''
 
 [[patches]]
 [patches.pattern]
@@ -468,17 +466,6 @@ payload = '''
     particle.lob = 0
     particle.immunity = 1
 '''
-# make that shit spin
-[[patches]]
-[patches.pattern]
-id = "rkka:strelok1frag_5"
-target = "particlesSystem.lua"
-pattern = 'if(ticle.typez == "fragGrenade" or ticle.typez == "flarePart" or ticle.typez == "contactGrenade" or ticle.typez == "redFlarePart"or ticle.typez == "rifleGrenade" or ticle.typez == "leuchtGrenade" or ticle.typez == "rocketGrenade" or ticle.typez == "stielgranate") then'
-position = "at"
-payload = '''
-if(ticle.typez == "fragGrenade" or ticle.typez == "limonka" or ticle.typez == "flarePart" or ticle.typez == "contactGrenade" or ticle.typez == "redFlarePart"or ticle.typez == "rifleGrenade" or ticle.typez == "leuchtGrenade" or ticle.typez == "rocketGrenade" or ticle.typez == "stielgranate") then 
-'''
-
 # Biden BLASTTTTTTT
 [[patches]]
 [patches.pattern]
@@ -546,10 +533,253 @@ payload = '''
     createCrater(player.explosions[#player.explosions], 5)
 '''
 
-# what's next? of course! creating the explosion. 
+# Sapper-1: Skill --> mousePrompt 1001
+[[patches]]
+[patches.pattern]
+id = "rkka:ATnade_0"
+target = "urb_engine.lua"
+pattern = 'mousePrompt = 14'
+position = "at"
+payload = '''
+mousePrompt = 1002
+'''
+# freakin, woops
+[[patches]]
+[patches.pattern]
+id = "rkka:ATnade_1"
+target = "main.lua"
+pattern = 'elseif(mousePrompt == 2) then'
+position = "before"
+payload = '''
+elseif(mousePrompt == 1002) then
+  local clone_sfx4 
+  clone_sfx4 = _G["fragReady"..randNbr(14)]:clone()
+  clone_sfx4:setVolume(stepScale(player.deployedTroops[convertedId(mousePrompter)])/2.3)
+  clone_sfx4:setPitch( ((90 + randNbr(10))/100)) 
+  clone_sfx4:play()
+  player.deployedTroops[convertedId(mousePrompter)].targetx = player.deployedTroops[convertedId(mousePrompter)].x
+  player.deployedTroops[convertedId(mousePrompter)].targety = player.deployedTroops[convertedId(mousePrompter)].y
+  player.deployedTroops[convertedId(mousePrompter)].actionTimer = 3
+  player.deployedTroops[convertedId(mousePrompter)].stateTimer = 3
+  player.deployedTroops[convertedId(mousePrompter)].state = "idle"
+  Rpg43Toss(x,y)''' 
 
 
+# MaxRange now 800. grenadeType 1002
+[[patches]]
+[patches.pattern]
+id = "rkka:ATnade_2"
+target = "urb_engine.lua"
+pattern = 'function performFragToss(x,y)'
+position = "before"
+payload = '''
+function Rpg43Toss(x,y)
+  local foo = convertedId(mousePrompter) 
+  if(foo ~= -1) then 
+    if(player.deployedTroops[foo].death ~= 1 and player.deployedTroops[foo].health > 10) then
+      player.deployedTroops[foo].targetx = player.deployedTroops[foo].x 
+      player.deployedTroops[foo].targety = player.deployedTroops[foo].y
+      local fragShot = distanceCheck(player.deployedTroops[foo].x, player.deployedTroops[foo].y, x+player.screenx, y+player.screeny)
+      local maxRange = 800 
+      if(hasPerk(player.deployedTroops[foo], 1)) then --slugger for sure
+       maxRange = maxRange * 1.15
+      end
+      if(fragShot < maxRange and player.deployedTroops[foo].pinned ~= 1 ) then 
+        fragShot = fragShot/8 -- rkkamod so error propagates by distance but there is NO need to reuse the same var here like WHAT is the confusion here gang
+        player.deployedTroops[foo].state = "fragThrow1"
+        player.deployedTroops[foo].fragx = x+player.screenx + (randNbr(fragShot*2)-fragShot)
+        player.deployedTroops[foo].fragy = y+player.screeny + (randNbr(fragShot*2)-fragShot) --error yeah
+        player.deployedTroops[foo].grenadeType = 1002
+        player.deployedTroops[foo].stateTimer = 0.1
+        player.deployedTroops[foo].actionTimer = 5
+        player.deployedTroops[foo].targetPointer = 0
+        player.deployedTroops[foo].skill2Timer = 120 --rkkamod lower this
+      else
+        local clone_sfx4 
+        clone_sfx4 = _G["neg"..randNbr(15)]:clone()
+        clone_sfx4:setVolume(stepScale(player.deployedTroops[foo])/2.3)
+        clone_sfx4:setPitch( ((90 + randNbr(10))/100)) 
+        clone_sfx4:play()
+        if(fragShot > 999) then 
+          player.textCue[#player.textCue+1] = {}
+          player.textCue[#player.textCue].name = tooFarTxt
+          player.textCue[#player.textCue].x = x
+          player.textCue[#player.textCue].y = y
+          player.textCue[#player.textCue].alpha = 255
+        end
+      end
+    end
+  end
+  buttoned = 1
+  --reinitialize all that shit
+  abilityDisplay = 0
+  mousePrompter = 0
+  specID = -99
+  mousePrompt = 0
+end
+'''
 
-# howevr, now limonkablast lasks a solid definition as per 
 
+# the parsing of the frag in the frame steps thru frag 1, 2, 3, then releases the correct grenade.
+[[patches]]
+[patches.pattern]
+id = "rkka:ATnade_3"
+target = "ai.lua"
+pattern = 'elseif(player.deployedTroops[i].grenadeType == 14) then '
+position = "before"
+payload = '''
+elseif(player.deployedTroops[i].grenadeType == 1002) then
+  throwRpg43(i, nil, player.deployedTroops[i].fragx , player.deployedTroops[i].fragy)
+'''
 
+# nextphase: throwLimonka() in engine.
+[[patches]]
+[patches.pattern]
+id = "rkka:ATnade_4"
+target = "urb_engine.lua"
+pattern = 'function throwFrag(dude, gear, x, y)'
+position = "before"
+payload = '''
+function throwRpg43(dude, gear, x, y)
+    print("TOSSING RPG")
+    player.deployedTroops[dude].rotation = math.atan2(player.deployedTroops[dude].y -(y ), player.deployedTroops[dude].x-(x ))+ 1.5  
+  newPart = {}
+    addParticle(newPart, "rpg43",  player.deployedTroops[dude].x, player.deployedTroops[dude].y, player.deployedTroops[dude].rotation)
+
+  table.insert(player.particles, newPart)
+
+  player.particles[#player.particles].targetx = x 
+  player.particles[#player.particles].targety = y 
+
+  -- set the mid point 
+  player.particles[#player.particles].lob = distanceCheck(player.particles[#player.particles].x, player.particles[#player.particles].y, player.particles[#player.particles].targetx, player.particles[#player.particles].targety)
+  --if the guy is inside we prevent the grande to bounce out
+  if(insideBunker(player.deployedTroops[dude]) or coveredBuilding(player.deployedTroops[dude])) then
+    player.particles[#player.particles].wallImmune = 0.3
+  end
+ -- print("particle type "..player.particles[#player.particles].typez.." lob is "..player.particles[#player.particles].lob)
+  -- play animation
+  player.deployedTroops[dude].state = "idle"
+  player.deployedTroops[dude].aim = 0
+  --player.deployedTroops[dude].pinned = 1
+  player.deployedTroops[dude].stateTimer = 0.5
+  player.deployedTroops[dude].actionTimer = 1
+  player.deployedTroops[dude].targetPointer = 0
+  player.deployedTroops[dude].temporaryStop = 1
+  player.deployedTroops[dude].frags = player.deployedTroops[dude].frags - 1
+  -- resets
+  clone_sfx = tossFrag:clone()
+  clone_sfx:setVolume(stepScale(player.deployedTroops[dude]))
+  clone_sfx:play()
+end
+'''
+# back to the particle engine!!!
+# note velocity cut down to 450 px
+[[patches]]
+[patches.pattern]
+id = "rkka:ATnade_5"
+target = "particlesSystem.lua"
+pattern = '  elseif(typez == "fragGrenade2") then '
+position = "before"
+payload = '''
+  elseif(typez == "rpg43") then
+    --particle, typez, x, y, rotationz
+    particle.typez = "rpg43"
+    particle.sprite = "rpg43"
+    particle.velocity = 450
+    particle.rotationz = rotationz
+    particle.innerRotation = 0
+    particle.spin = 0
+    particle.lifeSpan = 4
+    particle.faction = 0
+    particle.nextFrame = ""
+    particle.x = x
+    particle.y = y 
+    particle.xoffset = 20
+    particle.yoffset = 20
+    particle.drag = 1
+    particle.alpha = 255
+    particle.fade = 0
+    particle.expand = 0
+    --will be assigned in the action 
+    particle.targetx = 0
+    particle.targety = 0
+    particle.lob = 0
+    particle.immunity = 1
+'''
+[[patches]]
+[patches.pattern]
+id = "rkka:GRENADES_IN_GENERAL"
+target = "particlesSystem.lua"
+pattern = 'if(ticle.typez == "fragGrenade" or ticle.typez == "flarePart" or ticle.typez == "contactGrenade" or ticle.typez == "redFlarePart"or ticle.typez == "rifleGrenade" or ticle.typez == "leuchtGrenade" or ticle.typez == "rocketGrenade" or ticle.typez == "stielgranate") then'
+position = "at"
+payload = '''
+if(ticle.typez == "fragGrenade" or ticle.typez == "limonka" or ticle.typez == "rpg43" or ticle.typez == "flarePart" or ticle.typez == "contactGrenade" or ticle.typez == "redFlarePart"or ticle.typez == "rifleGrenade" or ticle.typez == "leuchtGrenade" or ticle.typez == "rocketGrenade" or ticle.typez == "stielgranate") then 
+'''
+
+[[patches]]
+[patches.pattern]
+id = "rkka:ATnade_7"
+target = "particlesSystem.lua"
+pattern = 'elseif(ticle.typez == "contactGrenade") then'
+position = "before"
+payload = '''
+elseif(ticle.typez == "rpg43") then
+  rpg43Blast(ticle.x, ticle.y)
+  print("RPG 1")
+'''
+[[patches]]
+[patches.pattern]
+id = "rkka:ATnade_8"
+target = "urb_engine.lua"
+pattern = 'function fragBlast(x,y)'
+position = "before"
+payload = '''
+function rpg43Blast(x,y)
+  createExplosion("rpg43explosion", x, y)
+  player.tension = 40
+  print("RPG 2")
+end
+'''
+
+[[patches]]
+[patches.pattern]
+id = "rkka:ATnade_9"
+target = "particlesSystem.lua"
+pattern = 'elseif(ticle.typez == "rocketGrenade") then '
+position = "before"
+payload = '''
+  elseif(ticle.types == "rpg43") then
+    createExplosion("rpg43explosion", ticle.x, ticle.y)
+    table.remove(player.particles, i)
+'''
+
+[[patches]]
+[patches.pattern]
+id = "rkka:ATnade_10"
+target = "urb_engine.lua"
+pattern = '  elseif(tag == "flakExplosion") then'
+position = "before"
+payload = '''
+  elseif(tag == "rpg43explosion") then
+    print("LEMON 3")
+    clone_sfx = _G["fragSound"..randNbr(3)]:clone()
+    player.explosions[#player.explosions+1] = {}
+    player.explosions[#player.explosions].tag = tag
+    player.explosions[#player.explosions].x = x
+    player.explosions[#player.explosions].y = y
+    player.explosions[#player.explosions].size = 1
+    player.explosions[#player.explosions].atRadius = 20
+    player.explosions[#player.explosions].atDamage = 50
+    player.explosions[#player.explosions].blastRadius = 75
+    player.explosions[#player.explosions].blastDamage = 40
+    player.explosions[#player.explosions].demoRadius = 10
+    player.explosions[#player.explosions].fragRadius = 150
+    player.explosions[#player.explosions].fragDamage = 75
+    player.explosions[#player.explosions].currentFrame = 1
+    player.explosions[#player.explosions].moraleHit = 20
+    player.explosions[#player.explosions].stunRange = 125
+    player.explosions[#player.explosions].stunTime = 5
+    player.explosions[#player.explosions].dad = dad
+    createCrater(player.explosions[#player.explosions], 25)
+'''
