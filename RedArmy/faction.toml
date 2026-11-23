@@ -80,8 +80,8 @@ rankText_3 = "Promote to Serzhant: +5 combat skill"
 # (rare) gets the first name too.
 [ranks]
 soldier = ["Gvardeyets", "Gv. Yefreitor", "Gv. Ml. Serzhant", "Gv. Serzhant"]
-# officer = ["Ml. Leytenant", "Leytenant", "Kapitan", "Mayor"]     # PLACEHOLDER: still the game's
-# sarge = "Starshina"                                             # PLACEHOLDER: the Sarge's title, still "Sarge"
+officer = ["Ml. Leytenant", "Leytenant", "Kapitan", "Mayor"]     # PLACEHOLDER: still the game's
+sarge = "Starshina"                                             # PLACEHOLDER: the Sarge's title, still "Sarge"
 
 
 # ============================== UNIT ART ==============================
@@ -522,6 +522,8 @@ rank_3 = { file = "misc/rank_3.png", size = [18, 22] }
 spec_sapper = { file = "icons/spec_AT.png", size = [46, 47] }
 rifle_skill_1 = "icons/rifle_skill_1.png"
 light_skill_2 = "icons/light_skill_2.png"
+sapper_skill_1 = "icons/sapper_skill_1.png"
+engy_skill_1 = { file = "icons/engy_skill_1.png", offset = [4, -3], draw_size = [55, 56] }
 
 
 # ============================== CLASSES ==============================
@@ -642,6 +644,22 @@ frag_damage = 75
 morale_hit = 20
 stun_range = 125
 
+[[explosions]]
+id = "rpg40"
+based_on = "frag"
+at_radius = 100
+at_damage = 250
+blast_radius = 100
+blast_damage = 50
+demo_radius = 50
+frag_radius = 100
+frag_damage = 50
+morale_hit = 15
+stun_range = 100
+stun_time = 7.5
+crater = 10
+
+
 [[ordnance]]
 id = "limonka"
 sprite = "misc/limonka.png"
@@ -656,13 +674,22 @@ name = "RPG-43"
 description = "Throws a shaped charge anti-tank grenade"
 sprite = "misc/rpg43.png"
 explosion = "faust"               # the bazooka's explosion
-range = 800
+range = 650
 cooldown = 150
 spin = 0                          # no tumbling: flies pointing the way it was thrown
 impact = true                     # goes off where it lands, as its impact fuse did
 skill = { class = "sapper", slot = 1 }     # the AT Rifleman's first skill (vanilla: sandbags)
 
-
+[[ordnance]]
+id = "rpg40"
+name = "RPG-40"
+description = "Throws a large impact grenade packing 700g explosive"
+sprite = "misc/rpg40.png"
+explosion = "rpg40"
+range = 650
+cooldown = 150
+impact = true
+skill = { class = "engy", slot = 1 } 
 # ============================== SKILLS ==============================
 # Changes to what a class skill does. Text only goes in [classes.<slot>] skills.
 
@@ -670,7 +697,6 @@ skill = { class = "sapper", slot = 1 }     # the AT Rifleman's first skill (vani
 class = "gunner"
 slot = 1                          # the bipod
 cooldown = 10                     # planning doc: "functionally like no cooldown"
-
 
 # ============================== VOICES ==============================
 # Voice lines. Name the files like the game's: contact1.wav, pinned3.wav, alliedHurt1.wav ...
