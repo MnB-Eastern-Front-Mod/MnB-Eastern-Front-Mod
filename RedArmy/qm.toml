@@ -180,4 +180,70 @@ target = "includes/urb_engine.lua"
 pattern = 'player\.deployedTroops\[idz\]\.weapon\.tag ~= "stenMKVI" or stenStealth'
 position = "at"
 payload = '(player.deployedTroops[idz].weapon.tag ~= "stenMKVI" and not player.deployedTroops[idz].weapon.suppressed) or stenStealth'
+
+# ============================== PWM GRENADE ==============================
+
+[[pattern]]
+id = "eastern_front:pwm_explosion"
+name = "PWM: improved Faust explosion"
+group = "PWM"
+target = "includes/urb_engine.lua"
+pattern = 'createExplosion("contactExplosion", x, y)'
+position = "at"
+match_indent = true
+times = 1
+payload = '''
+createExplosion("faustExplosion2", x, y)
+'''
+
+[[pattern]]
+id = "eastern_front:pwm_no_spin"
+name = "PWM: face throw direction without spinning"
+group = "PWM"
+target = "includes/particlesSystem.lua"
+pattern = '''
+elseif(typez == "contactGrenadePart") then
+    --particle, typez, x, y, rotationz
+    particle.typez = "contactGrenade"
+    particle.sprite = "contactFragPart"
+    particle.velocity = 500
+    particle.rotationz = rotationz
+    particle.innerRotation = 0
+    particle.spin = randNbr(5)/10
+'''
+position = "at"
+match_indent = true
+times = 1
+payload = '''
+elseif(typez == "contactGrenadePart") then
+    --particle, typez, x, y, rotationz
+    particle.typez = "contactGrenade"
+    particle.sprite = "contactFragPart"
+    particle.velocity = 600
+    particle.rotationz = rotationz
+    particle.innerRotation = rotationz
+    particle.spin = 0
+'''
+
+[[pattern]]
+id = "eastern_front:pwm_throw_range"
+name = "PWM: cap throw distance at 650"
+group = "PWM"
+target = "includes/urb_engine.lua"
+pattern = 'function throwContactGrenade(dude, gear, x, y)'
+position = "after"
+match_indent = true
+times = 1
+payload = '''
+  local thrower = player.deployedTroops[dude]
+  local dx = x - thrower.x
+  local dy = y - thrower.y
+  local distance = math.sqrt(dx * dx + dy * dy)
+  local maxDistance = 650
+
+  if distance > maxDistance then
+    x = thrower.x + dx * maxDistance / distance
+    y = thrower.y + dy * maxDistance / distance
+  end
+'''
 times = 1
