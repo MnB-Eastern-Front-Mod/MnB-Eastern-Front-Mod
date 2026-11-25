@@ -525,6 +525,11 @@ light_skill_2 = "icons/light_skill_2.png"
 sapper_skill_1 = "icons/sapper_skill_1.png"
 engy_skill_1 = { file = "icons/engy_skill_1.png", offset = [4, -3], draw_size = [55, 56] }
 
+#PWM impact AT grenade replacing the contact frag
+pack_contactFrag = "misc/pack_pwm.png"
+loot_contactFrag = "misc/pwm.png"
+contactFragPart = "misc/pwm.png"
+
 
 # ============================== CLASSES ==============================
 # The game has 12 class slots. We can rename and rebalance them, not add new ones.
