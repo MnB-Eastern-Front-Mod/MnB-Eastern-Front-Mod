@@ -651,7 +651,7 @@ stun_range = 125
 
 [[explosions]]
 id = "rpg40"
-based_on = "frag"
+based_on = "atGrenade"
 at_radius = 100
 at_damage = 250
 blast_radius = 100
