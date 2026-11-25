@@ -206,7 +206,7 @@ elseif(typez == "contactGrenadePart") then
     --particle, typez, x, y, rotationz
     particle.typez = "contactGrenade"
     particle.sprite = "contactFragPart"
-    particle.velocity = 500
+    particle.velocity = 600
     particle.rotationz = rotationz
     particle.innerRotation = 0
     particle.spin = randNbr(5)/10
@@ -219,7 +219,7 @@ elseif(typez == "contactGrenadePart") then
     --particle, typez, x, y, rotationz
     particle.typez = "contactGrenade"
     particle.sprite = "contactFragPart"
-    particle.velocity = 600
+    particle.velocity = 500
     particle.rotationz = rotationz
     particle.innerRotation = rotationz
     particle.spin = 0
