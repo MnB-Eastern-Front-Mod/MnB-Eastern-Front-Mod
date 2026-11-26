@@ -193,7 +193,7 @@ position = "at"
 match_indent = true
 times = 1
 payload = '''
-createExplosion("faustExplosion2", x, y)
+createExplosion("faustExplosion", x, y)
 '''
 
 [[pattern]]
