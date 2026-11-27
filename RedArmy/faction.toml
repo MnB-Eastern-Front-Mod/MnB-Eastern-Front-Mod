@@ -1,5 +1,5 @@
 #:schema ./faction.schema.json
-# faction.toml: the Red Army takes over the Allied side. No code needed for anything in here.
+# The Red Army takes over the Allied side. Everything in this file works without code.
 #
 # How to read this file:
 #   REAL         = taken from the planning doc or the "Weapons Stats" sheet.
@@ -68,11 +68,19 @@ playerSkillText_12 = "Frunzentsy: You can reroll the 3 command abilities offered
 
 lootText_ration = "Tushonka, +5 to max health"
 lootText_molotov = "An incendiary bottle. Right click to use once looted."
-# The promote buttons. The rank names are in [ranks] below; the smaller combat skill gains
-# these texts describe are patched in qm.toml.
+# The promote buttons. The rank names and the smaller combat skill gains these texts describe
+# are in [ranks] below.
 rankText_1 = "Promote to Yefreitor: +5 combat skill"
 rankText_2 = "Promote to Mladshiy Serzhant: +5 combat skill"
 rankText_3 = "Promote to Serzhant: +5 combat skill"
+
+
+# ============================== INTRO ==============================
+# The date and unit over the landing, and a line on the first screen.
+[intro]
+date = "October 24, 1943"
+unit = "Razvedvzvod, 117th Guards Rifle Regiment, 39th Guards Rifle Division, 8th Guards Army, 3rd Ukrainian Front"
+lines = ["Red Army Mod loaded!"]
 
 
 # ============================== RANKS ==============================
@@ -80,8 +88,9 @@ rankText_3 = "Promote to Serzhant: +5 combat skill"
 # (rare) gets the first name too.
 [ranks]
 soldier = ["Gvardeyets", "Gv. Yefreitor", "Gv. Ml. Serzhant", "Gv. Serzhant"]
-officer = ["Ml. Leytenant", "Leytenant", "Kapitan", "Mayor"]     # PLACEHOLDER: still the game's
-sarge = "Starshina"                                             # PLACEHOLDER: the Sarge's title, still "Sarge"
+officer = ["Ml. Leytenant", "Leytenant", "Kapitan", "Mayor"]
+sarge = "Starshina"                                             # the Sarge's title
+promotion_skill = [5, 5, 5]      # +5 combat skill at each promotion (the game's +5, +10, +15)
 
 
 # ============================== UNIT ART ==============================
@@ -161,6 +170,7 @@ stats = { action = "bolt", ammo = 1, maxAmmo = 1, range = 300, damage = 150, rec
 
 [[weapons]]
 tag = "mosinBramit"
+suppressed = true                  # the Sten Mk VI's rule: firing may keep stealth or camo
 based_on = "springfield"
 name = "Mosin BraMit"
 description = "Mosin M91/30 fitted with a Bramit suppressor. Reduced-velocity ammunition softens recoil, at the cost of range and damage."
@@ -272,6 +282,7 @@ stats = { action = "auto", class = "smg", ammo = 35, maxAmmo = 35, range = 150, 
 
 [[weapons]]
 tag = "ppdBramit"
+suppressed = true                  # the Sten Mk VI's rule: firing may keep stealth or camo
 based_on = "stenMKVI"
 name = "PPD BraMit (box)"
 description = "PPD fitted with a Bramit suppressor and a 25-round box magazine. Fast, low-recoil fire at close range, but limited capacity and reduced damage."
@@ -283,6 +294,7 @@ stats = { action = "auto", class = "smg", ammo = 25, maxAmmo = 25, range = 200, 
 
 [[weapons]]
 tag = "ppdBramitDrum"
+suppressed = true                  # the Sten Mk VI's rule: firing may keep stealth or camo
 based_on = "stenMKVI"
 name = "PPD BraMit (Drum)"
 description = "PPD fitted with a Bramit suppressor and a drum. Ample ammunition for silent close-range fire, but bulkier and more prone to stoppages due to drum feed."
@@ -373,11 +385,18 @@ mag_sprite = "genericMag"
 stats = { action = "bolt", ammo = 5, maxAmmo = 5, range = 600, damage = 120, recoil = 15, bulk = 15, rof = 10, rofTime = 99, jam = 2, rgCapable = 0 }
 
 # ---- Anti-tank rifles ----
-# PRIMARY AT rifles: main weapons that use their own ammo and reload (code in qm.toml, tags
-# listed in hooks.lua). The vanilla "boysRifle" stays what it is in the game: a picked-up
-# extra with 10 shots. So the AT Rifleman's lend-lease Boys is its own weapon, "boysAT".
+# Primary AT rifles: main weapons that use their own ammo and reload. Their kind, at_rifle,
+# starts from the Boys rifle (big casings, heavy tracers, gibs, smashing light cover, hits that
+# burst on vehicles) and puts it on a magazine. The vanilla "boysRifle" stays as the game has
+# it, a picked-up extra with 10 shots, so the AT Rifleman's lend-lease Boys is its own weapon,
+# "boysAT".
+[weapon_kinds.at_rifle]
+like = "boysRifle"
+ammo = "magazine"                 # its own magazine (ammo, maxAmmo); reloads; kept when empty
+
 [[weapons]]
 tag = "boysAT"
+kind = "at_rifle"
 based_on = "boysRifle"
 name = "Boys AT Rifle"
 description = "Boys .55 anti-tank rifle from lend-lease. Punches through cover at a very good range. Extremely heavy."
@@ -389,6 +408,7 @@ stats = { action = "bolt", class = "atRifle", ammo = 10, maxAmmo = 10, range = 8
 
 [[weapons]]
 tag = "ptrd"
+kind = "at_rifle"
 based_on = "boysRifle"
 name = "PTRD"
 description = "PTRD, single-shot 14.5mm anti-tank rifle. Excellent range and damage, but extremely cumbersome and requires reloading after every shot."
@@ -400,6 +420,7 @@ stats = { action = "bolt", class = "atRifle", ammo = 1, maxAmmo = 1, range = 100
 
 [[weapons]]
 tag = "ptrs"
+kind = "at_rifle"
 based_on = "boysRifle"
 name = "PTRS"
 description = "PTRS, semi-automatic 14.5mm anti-tank rifle with a five-round magazine. Powerful shots and rapid follow-up fire, but even heavier than the PTRD."
@@ -453,7 +474,7 @@ sound = "brenSound"
 mag_sprite = "ammoBox"
 stats = { action = "auto", class = "lmg", ammo = 250, maxAmmo = 250, range = 375, damage = 95, recoil = 10, bulk = 26, rof = 30, rofTime = 0.10, jam = 10, rgCapable = 0 }
 
-# ---- German Weapons ----
+# ---- German weapons ----
 [[weapons]]
 reskin = "fg42"
 name = "FG42"
@@ -512,7 +533,6 @@ scopedEnfield = "scopedMosinPE"
 dpMag = "misc/dpMag.png"
 ppsMag = "misc/ppsMag.png"
 dtMag = "misc/dtMag.png"
-frag = "misc/rg42.png"
 # Our rank stripes and AT badge have other shapes than the game's (its stripes are 32 wide),
 # so each gives the size it is shown at. rank_0 already matches.
 rank_0 = "misc/rank_0.png"
@@ -524,11 +544,6 @@ rifle_skill_1 = "icons/rifle_skill_1.png"
 light_skill_2 = "icons/light_skill_2.png"
 sapper_skill_1 = "icons/sapper_skill_1.png"
 engy_skill_1 = { file = "icons/engy_skill_1.png", offset = [4, -3], draw_size = [55, 56] }
-
-#PWM impact AT grenade replacing the contact frag
-pack_contactFrag = "misc/pack_pwm.png"
-loot_contactFrag = "misc/pwm.png"
-contactFragPart = "misc/pwm.png"
 
 
 # ============================== CLASSES ==============================
@@ -651,7 +666,7 @@ stun_range = 125
 
 [[explosions]]
 id = "rpg40"
-based_on = "atGrenade"
+based_on = "at_grenade"           # the game's AT grenade explosion (atGrenadeExplosion)
 at_radius = 100
 at_damage = 250
 blast_radius = 100
@@ -670,6 +685,7 @@ id = "limonka"
 sprite = "misc/limonka.png"
 explosion = "f1"
 range = 800
+speed = 450                       # a little slower than the game's grenades (500)
 cooldown = 90
 skill = { class = "rifle", slot = 1 }      # the Strelok's first skill (vanilla: AP rounds)
 
@@ -680,6 +696,7 @@ description = "Throws a shaped charge anti-tank grenade"
 sprite = "misc/rpg43.png"
 explosion = "faust"               # the bazooka's explosion
 range = 650
+speed = 450                       # a little slower than the game's grenades (500)
 cooldown = 150
 spin = 0                          # no tumbling: flies pointing the way it was thrown
 impact = true                     # goes off where it lands, as its impact fuse did
@@ -694,7 +711,36 @@ explosion = "rpg40"
 range = 650
 cooldown = 150
 impact = true
-skill = { class = "engy", slot = 1 } 
+skill = { class = "engy", slot = 1 }
+
+# RG-42: the game's frag, drawn as the RG-42. The Avtomatchik throws it with his second skill,
+# and so does the AI.
+[[ordnance]]
+reskin = "frag"
+sprite = "misc/rg42.png"
+
+# PWM: the German impact AT grenade, in place of the game's contact grenade. German soldiers
+# throw it, and ours throw the ones they find as loot. The reskin draws the game's contact
+# grenade as the PWM in the air, where it is carried and on the ground; the entry after it is
+# the grenade both sides throw.
+[[ordnance]]
+reskin = "contact_frag"
+sprite = "misc/pwm.png"
+pack_sprite = "misc/pack_pwm.png"
+loot_sprite = "misc/pwm.png"
+
+[[ordnance]]
+id = "pwm"
+sprite = "misc/pwm.png"
+explosion = "faust"               # the bazooka's explosion (the plain one, not faustExplosion2)
+range = 650
+speed = 500                       # slower than the game's contact grenade (600)
+spin = 0                          # flies pointing the way it was thrown
+impact = true                     # goes off where it lands
+replaces = "contact_frag"         # thrown wherever the game's contact grenade would be
+sides = "both"                    # by both sides: the Germans' and the ones we find as loot
+
+
 # ============================== SKILLS ==============================
 # Changes to what a class skill does. Text only goes in [classes.<slot>] skills.
 
@@ -777,10 +823,3 @@ name = "37mm 61-K"
 # [[vehicles]]
 # reskin = "landMattress"
 # name = "BM-13 Katyusha"
-
-
-# ============================== HOOKS ==============================
-# A Lua file for small things this file can't say. It marks the primary AT rifles and the
-# suppressed weapons for the patches in qm.toml.
-[hooks]
-lua = "hooks.lua"

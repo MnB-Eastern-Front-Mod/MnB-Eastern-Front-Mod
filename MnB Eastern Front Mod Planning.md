@@ -23,24 +23,24 @@ Finalised version: 117th Guards Rifle Regiment, 39th Guards Rifle Division
 | ID | Maps | Dates / days | Setting | Vanilla Ananogue |
 | :---- | :---- | :---- | :---- | :---- |
 | 1 | ***Dnieper Crossing***  | **1 \- night** |  | Omaha plus Aure valley |
-| 2 | Dnipropetrovsk  | 3 days |  | *dense city, Aure skip* |
-| 3 | Nikopol’ | 30 | [wiki](https://en.wikipedia.org/wiki/Nikopol%E2%80%93Krivoi_Rog_offensive#Background) | marshes, rivers, floodplains |
+| 2 | Dnipropetrovsk  | 2 days |  | *dense city, Aure skip* |
+| 3 | Dnieper Bend \- Nikopol’ | 30 days | [wiki](https://en.wikipedia.org/wiki/Nikopol%E2%80%93Krivoi_Rog_offensive#Background) 3 Geb.Jg? 24 PzDiv? Elefante? | marshes, rivers, floodplains |
 | 4 | ***Inhulets River*** | 1 day |  | narrow river crossing |
-| 5 | Inhulets Bridgehead | 10 days |  | more mud and flooded land |
+| 5 | Inhulets Bridgehead | 12 days | 9/23 Pz Counters? | more mud and flooded land |
 | 6 | ***Southern Bug Crossing*** | **1 day**  |  | major river crossing |
-| 7 | Approach to Odessa | 16 days |  | steppe, bridges, estuaries |
+| 7 | Approach to Odessa | 16 days | 9/23 Pz Counters? | steppe, bridges, estuaries |
 | 8 | Odessa City | 3 days |  | big ass city |
-| 9 | *Kovel?* | 7 days |  | flat terrain; forests,  |
-| 10 | ***Western Bug Crossing*** | 1 day |  | hilly? some trees, also a river  |
-| 11 | Lublin | 4 days |  | city fighting |
+| 9 | Dniester-Sherpen Bridgehead | 8 days |  | flat terrain; forests,  |
+| 10 | Kovel-Western Bug | 5 day |  | hilly? some trees, also a river  |
+| 11 | Lublin | 5 days |  | city fighting |
 | 12 | ***Vistula Crossing*** | **1 day** |  | flat, sandy, wide river |
-| 13 | Magnuszew Bridgehead  | **20 days** |  | floodplains again?? |
+| 13 | Magnuszew Bridgehead  | **20 days** | 4/5 Pz? | floodplains again?? |
 | 14 | Vistula-Oder | 24 days |  | wide long maps |
 | 15 | Kustrin Fortress (Festung Kustrin) | 8 days | brest \+ aachen; trapdoors | an actual fortress, so like brest |
 | 16 | ***Oder Crossing*** | 1 day |  | assault over ice |
 | 17 | Kustrin Bridgehead | 13 |  |  |
 | 18 | Seelow Heights | 4 | barrage? always on | use the cliff thing |
-| 19 | Berlin | 10 |  |  |
+| 19 | Berlin | 10 | SS Charlemagne |  |
 
 **1\.**  
 **![][image1]![][image2]**  
@@ -1667,11 +1667,11 @@ the question is: **how good?**
 *This standard is minimal and is already towards a strong state of completion.*
 
 - [ ] **skills**  
-  - [ ] the RPG-43 successfully implemented. :(  
+  - [x] ~~the RPG-43 successfully implemented. :(~~  
 - [ ] **very basic art**  
   - [ ] replacement of icons with already existing icons  
-  - [ ] replace the U.S. text with a red start  
-  - [ ] replacement of rank art with the already existing art  
+  - [ ] replace the U.S. text with a red star  
+  - [x] ~~replacement of rank art with the already existing art~~  
   - [ ] fix officer promotion text  
 - [ ] **music**  
   - [ ] implementation of loss music  
@@ -1695,13 +1695,14 @@ the question is: **how good?**
 
 - [ ] Realnades  
   - [x] ~~Strelok-1 implement the actual F-1, instead of FG-42 copy~~  
-  - [ ] AT-1 implement the actual RPG-43, instead of FG-42 copy  
+  - [x] ~~AT-1 implement the actual RPG-43, instead of FG-42 copy~~  
+  - [ ] PWM respite and rework for German contact frag.  
 - [ ] Ribbons  
   - [ ] rename a few	  
 - [ ] Ranks  
   - [ ] change rank stripe images \- Moto did this
 
-- [ ] ask urb for gun sounds   
+- [x] ~~ask urb for gun sounds~~   
 - [x] ~~s89 does an amazing job at playing the piano and does a license free copy of *Tormented*~~
 
 - [ ] Soldier sprites  

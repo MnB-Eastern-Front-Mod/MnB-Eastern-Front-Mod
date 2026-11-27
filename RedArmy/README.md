@@ -1,7 +1,7 @@
 # Red Army (QuarterMaster faction mod)
 
 The Red Army takes over the Allied side of Mud and Blood. This folder is the mod itself.
-It is a template: the structure is complete, much of the content is still placeholder.
+It is a template: the structure is complete, and much of the content is still placeholder.
 
 ## Files
 
@@ -9,8 +9,6 @@ It is a template: the structure is complete, much of the content is still placeh
 |---|---|
 | `mod.json` | Who the mod is: id, name, version, and the QuarterMaster features it needs. |
 | `faction.toml` | The army: names, text, ranks, weapons, classes, grenades, skills, vehicles, image sizes. Most work happens here. |
-| `qm.toml` | Code patches for things `faction.toml` can't do: intro text, promotion gains, primary AT rifles, suppressed weapons. |
-| `hooks.lua` | Small Lua hooks. Marks the primary AT rifles and the suppressed weapons. |
 | `names/` | Soldier name lists, one name per line. |
 | `units/<unit>/` | Soldier art, one image per animation frame (`idle.png`, `aim.png` ...). |
 | `weapons/` | Weapon art: `top_<tag>.png` (in hand) and `side_<tag>.png` (in menus). Sounds go here too. |
@@ -21,20 +19,21 @@ It is a template: the structure is complete, much of the content is still placeh
 
 ## Real and placeholder
 
-Every section of `faction.toml` starts with a comment marked **REAL** (from the planning doc or
-the Weapons Stats sheet) or **PLACEHOLDER** (an example to replace). Lines starting with `# ` are
+Every section of `faction.toml` starts with a comment marked REAL (from the planning doc or
+the Weapons Stats sheet) or PLACEHOLDER (an example to replace). Lines starting with `# ` are
 switched off; remove the `# ` to switch them on. Anything left out stays vanilla.
 
-Real so far: faction header, 29 weapons with stats and text, 12 class names with start weapons and
-unlocks, battle condition renames, 7 vehicle names, partisan weapon pool.
+Real so far: faction header, ranks, 31 weapons with stats and text (28 with their own art),
+grenades, 12 class names with start weapons and unlocks, battle condition renames, 7 vehicle
+names, partisan weapon pool.
 
-Still placeholder: name lists, all unit art, most weapon art (19 sprites exist), all sounds and
-voices, vehicle art, class descriptions, most bonuses and icons.
+Still placeholder: name lists, all unit art, all sounds and voices, vehicle art, class
+descriptions, most bonuses and icons.
 
 ## Checking your work
 
-The mod needs QuarterMaster 2.2.0 or newer (its grenades and skills use the loader's ordnance
-skill and rank helpers). Run this after every change (`qm.exe` ships with QuarterMaster):
+The mod needs QuarterMaster 2.2.2 or newer, for the loader's grenade, skill, rank, intro and
+weapon behaviour features. Run this after every change (`qm.exe` comes with QuarterMaster):
 
 ```
 qm faction check RedArmy

@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://quartermaster.local/schemas/faction-1.json",
   "title": "QuarterMaster faction.toml (schema 1)",
-  "description": "A faction mod: an army that takes over the Allied or German side. Guide: docs/QUARTERMASTER_MODDING_WIKI.md (Part 3).",
+  "description": "A faction mod: an army that takes over the Allied or German side. Guide: the modding wiki, Part 3: https://gamiseus.github.io/wiki/faction-mods/",
   "type": "object",
   "required": ["schema", "id", "name", "replaces"],
   "additionalProperties": false,
@@ -95,8 +95,27 @@
 
     "sprites": {
       "type": "object",
-      "description": "Any other game image to replace while the faction is active: global name = image file.",
-      "additionalProperties": { "$ref": "#/definitions/path" }
+      "description": "Any other game image to replace while the faction is active: global name = image file, or a table with the file, the size it is shown at and where it sits.",
+      "additionalProperties": {
+        "oneOf": [
+          { "$ref": "#/definitions/path" },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "The image file (or none, to size the game's own image), one of size, scale and like, and where it sits (offset, rotate, flip). Needs \"faction_sprite_sizes\" in qm_features.",
+            "properties": {
+              "file": { "$ref": "#/definitions/path" },
+              "size": { "type": "array", "items": { "type": "number", "exclusiveMinimum": 0 }, "minItems": 2, "maxItems": 2, "description": "[width, height] in the game's pixels." },
+              "scale": { "type": "number", "exclusiveMinimum": 0, "description": "A fraction of the file's own pixel size." },
+              "like": { "type": "string", "description": "Another image global: shown at the size that one is shown at." },
+              "offset": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2, "description": "[x, y] game pixels to move the image, right and down, inside the place the game draws it." },
+              "rotate": { "type": "number", "description": "Degrees to turn the image about its middle, clockwise." },
+              "flip": { "type": "string", "enum": ["x", "y", "xy"], "description": "Mirror the image about its middle: x left-right, y up-down, xy both." },
+              "draw_size": { "type": "array", "items": { "type": "number", "exclusiveMinimum": 0 }, "minItems": 2, "maxItems": 2, "description": "[width, height] game pixels to draw the picture at inside its place, while the game's code still sees the original's size." }
+            }
+          }
+        ]
+      }
     },
 
     "sounds": {
@@ -106,6 +125,64 @@
     },
 
     "vehicles": { "type": "array", "items": { "$ref": "#/definitions/vehicle" } },
+
+    "explosions": {
+      "type": "array",
+      "description": "Explosions on the game's own, with numbers changed. An [[ordnance]] entry names one by its id.",
+      "items": { "$ref": "#/definitions/explosion" }
+    },
+
+    "ordnance": {
+      "type": "array",
+      "description": "The faction's ordnance: grenades, rifle grenades, mortars, artillery, air strikes and supply drops, with their own explosions, on a class skill or in place of the game's own.",
+      "items": { "$ref": "#/definitions/ordnance" }
+    },
+    "skills": {
+      "type": "array",
+      "description": "Class skills changed, replaced with another, moved to another level, removed or added.",
+      "items": { "$ref": "#/definitions/skill_entry" }
+    },
+
+    "ranks": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The rank names shown on the faction's soldiers, and the skill a promotion gives. Needs \"ranks\" in qm_features.",
+      "properties": {
+        "soldier": { "type": "array", "items": { "type": "string", "minLength": 1 }, "maxItems": 4, "description": "Ranks 0 to 3 (the game's Private, Private First Class, Corporal, Sergeant)." },
+        "officer": { "type": "array", "items": { "type": "string", "minLength": 1 }, "maxItems": 4, "description": "An officer's ranks 0 to 3 (the game's Second Lieutenant, First Lieutenant, Captain, Major)." },
+        "recruit": { "type": "string", "minLength": 1, "description": "A soldier with no rank yet (the game's Recruit). The first soldier rank unless set." },
+        "cadet": { "type": "string", "minLength": 1, "description": "An officer with no rank yet (the game's Cadet). The first officer rank unless set." },
+        "sarge": { "type": "string", "minLength": 1, "description": "The Sarge's title: his name, and the word in the game's lines and texts about him. The Allies' only." },
+        "promotion_skill": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 0, "maximum": 100 },
+          "minItems": 1,
+          "maxItems": 3,
+          "description": "The combat skill a soldier gains at promotion to rank 1, 2 and 3 (the game's 5, 10, 15). A missing one keeps the game's; class bonuses are unchanged. The Allies' only. Needs \"promotion_skill\" in qm_features."
+        }
+      }
+    },
+
+    "allied": { "$ref": "#/definitions/side_half", "description": "The Allied side, when the file replaces the Germans: that side's own keys (units, spawn_swap, classes, names, voices, vehicles, skills, ranks, intro). Needs \"faction_sides\" in qm_features." },
+    "axis": { "$ref": "#/definitions/side_half", "description": "The German side, when the file replaces the Allies: that side's own keys (units, spawn_swap, names, voices, vehicles, ranks). Needs \"faction_sides\" in qm_features." },
+
+    "weapon_kinds": {
+      "type": "object",
+      "description": "Reusable sets of weapon behaviour: what the game decides by a weapon's class or tag. A weapon takes one with kind = \"<name>\". Needs \"weapon_kinds\" in qm_features.",
+      "propertyNames": { "pattern": "^[A-Za-z0-9_]+$" },
+      "additionalProperties": { "$ref": "#/definitions/weapon_kind" }
+    },
+
+    "intro": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The words of the game's opening. Needs \"faction_intro\" in qm_features.",
+      "properties": {
+        "date": { "type": "string", "minLength": 1, "description": "The date over the landing (the game's \"June 6, 1944\"). The Allies' only." },
+        "unit": { "type": "string", "minLength": 1, "description": "The unit line under the date (the game's \"Company C, 116th Regiment, 29th div\"). The Allies' only." },
+        "lines": { "type": "array", "items": { "type": "string" }, "description": "Lines on the first screen, under \"URB and the MNB community presents\". Either side." }
+      }
+    },
 
     "hooks": {
       "type": "object",
@@ -129,6 +206,25 @@
     "spec": {
       "enum": ["rifle", "light", "gunner", "medic", "comms", "officer", "engy", "scout", "sniper", "commando", "sapper", "intel"]
     },
+    "skill_entry": {
+      "type": "object",
+      "required": ["class", "slot"],
+      "additionalProperties": false,
+      "properties": {
+        "class": { "$ref": "#/definitions/spec" },
+        "slot": { "type": "integer", "minimum": 1, "description": "1 to 3: one of the class's own skills; 4 and up: new skills above them." },
+        "name": { "type": "string", "description": "Its mouse-over text, before the description." },
+        "description": { "type": "string", "description": "Its mouse-over text, after the name." },
+        "icon": { "$ref": "#/definitions/path", "description": "Its icon." },
+        "cooldown": { "type": "number", "minimum": 0, "description": "Seconds before it is ready again." },
+        "unlock": { "type": "integer", "minimum": 1, "description": "The skill level it comes with (its slot, or 3 for a new skill, unless set)." },
+        "game": { "type": ["integer", "string"], "description": "A game skill: 2 (the class's own skill 2) or \"light:3\" (any class's)." },
+        "ordnance": { "type": "string", "description": "An [[ordnance]] id of this faction, thrown, fired or called in." },
+        "remove": { "type": "boolean", "description": "The class has no skill in this slot." },
+        "backdrop": { "type": "boolean", "description": "Its icon is drawn on the game's blank skill button, as the game's skill icons are." },
+        "sprite_icon": { "type": "boolean", "description": "With ordnance: its sprite, on the game's blank skill button, is the icon." }
+      }
+    },
 
     "pool": { "enum": ["allied", "allied_sniper", "grunt", "para", "resistance", "smg", "axis", "axis_crew"] },
 
@@ -138,6 +234,11 @@
 
     "vanilla_vehicle": {
       "enum": ["sherman", "stuart", "churchill", "m10", "m20", "m5", "greyHound", "jeep", "deuce", "weasel", "weaselBoxed", "halfTrack", "ambulance", "howitzer", "landMattress", "bofor", "m2hb", "clownCar", "panzer4", "panther", "tiger", "stug", "flakPanzer", "wespe", "puma", "sdkfz", "sdkfz2", "sdkfz2Boxed", "sdkfz222", "opel", "kubel", "benz", "bike", "horseCart", "goliath", "r35", "nebel", "flak30", "flak38", "germHowitzer", "pak36", "pak38", "pak88", "zb60", "armoredCannon", "brestCannon"]
+    },
+
+    "game_grenade": {
+      "enum": ["frag", "stick_frag", "contact_frag", "at_grenade", "molotov", "blendkorper", "smoke", "rifle_grenade"],
+      "description": "frag: the Allied frag; stick_frag: the German stick grenade; contact_frag: the contact frag; at_grenade: the anti-tank grenade; molotov; blendkorper: the gas grenade; smoke: the smoke grenade; rifle_grenade."
     },
 
     "frame": {
@@ -218,12 +319,107 @@
         "top_sprite": { "$ref": "#/definitions/path" },
         "side_sprite": { "$ref": "#/definitions/path" },
         "sound": { "type": "string", "description": "A game sound by name (springfieldSound), a file, or a name prefix: weapons/mosin loads mosin1.wav, mosin2.wav, ..." },
-        "mag_sprite": { "type": "string", "description": "A game sprite name or an image file." },
+        "mag_sprite": { "type": "string", "description": "The magazine dropped on reload: one of the game's magazines (genericMag, ppshMag, ...), an image file, or a name from [sprites]." },
         "stats": { "$ref": "#/definitions/weapon_stats" },
         "loot_side": { "enum": ["allied", "axis", "none"], "default": "none", "description": "Shorthand for pools = [\"allied\"] or [\"axis\"]." },
-        "pools": { "type": "array", "items": { "$ref": "#/definitions/pool" }, "description": "Random weapon pools this new weapon joins." }
+        "pools": { "type": "array", "items": { "$ref": "#/definitions/pool" }, "description": "Random weapon pools this new weapon joins." },
+        "replaces_pickup": { "enum": ["boysRifle", "pz39"], "description": "A new weapon: the faction's soldiers get it when they pick up that game AT rifle as loot, in its place. Give it a kind like the AT rifle it replaces, so it keeps the game's AT rifle behaviour. Needs \"weapon_kinds\" in qm_features." },
+        "kind": { "type": "string", "pattern": "^[A-Za-z0-9_]+$", "description": "A [weapon_kinds] name: the weapon behaves as that kind says. Its own behaviour keys win over the kind's. Needs \"weapon_kinds\" in qm_features." },
+        "ammo": { "$ref": "#/definitions/ammo_mode" },
+        "when_empty": { "$ref": "#/definitions/when_empty" },
+        "heavy_hits": { "$ref": "#/definitions/heavy_hits" },
+        "suppressed": { "$ref": "#/definitions/suppressed" },
+        "reveal_chance": { "$ref": "#/definitions/reveal_chance" },
+        "casing": { "$ref": "#/definitions/casing" },
+        "pellets": { "type": "boolean", "description": "A shotgun's spread: a miss leaves four tracers and no dirt splash. The game's: the shotgun. Needs \"weapon_kinds\" in qm_features." },
+        "tracer": { "$ref": "#/definitions/tracer" },
+        "miss_morale": { "type": "boolean", "description": "A miss shakes the target's morale. The game's: AT rifles. Needs \"weapon_kinds\" in qm_features." },
+        "breaks_trees": { "type": "boolean", "description": "A miss that hits a tree breaks it. The game's: AT rifles. Needs \"weapon_kinds\" in qm_features." },
+        "vehicle_burst": { "type": "string", "description": "The explosion a hit on a vehicle sets off: one of the game's (frag, contact, at_grenade, rifle_grenade, mortar, faust, artillery, heavy_mortar, bomb, strafe, or their game names such as flakExplosion and pzExplosion), an [[explosions]] id of this faction, or \"none\". The game's: flakExplosion for the Boys rifle, pzExplosion for the PzB 39; heavy_hits = true brings flakExplosion. Needs \"weapon_kinds\" in qm_features." },
+        "gibs": { "type": "boolean", "description": "A kill can blow the target apart. The game's: AT rifles. Needs \"weapon_kinds\" in qm_features." },
+        "armor_hit": { "type": "boolean", "description": "A hit on armour plays the AT rifle's hit sound and sparks. The game's: AT rifles. Needs \"weapon_kinds\" in qm_features." },
+        "close_range": { "type": "boolean", "description": "A shotgun's range: much more accurate and twice the damage up close, weaker far off. The game's: the shotgun. Needs \"weapon_kinds\" in qm_features." },
+        "counts_as": { "$ref": "#/definitions/counts_as" },
+        "night_sight": { "type": "boolean", "description": "The IR StG 44's sight: sees through smoke, spots at night and spots hidden enemies and vehicles. The game's: the IR StG 44. Needs \"weapon_kinds\" in qm_features." },
+        "fires": { "type": "string", "description": "An [[ordnance]] id: a shot leaves as that ordnance towards the target, spread by the shooter's skill, in place of a bullet. A thrown one is lobbed (impact = true makes it go off where it lands); a rifle one flies flat, as a rifle grenade. Needs \"weapon_kinds\" in qm_features." },
+        "fires_chance": { "type": "number", "minimum": 0, "maximum": 100, "description": "With fires: the share of shots in percent that leave as the ordnance; the rest are bullets. All of them without it. Needs \"weapon_kinds\" in qm_features." },
+        "fires_ammo": { "type": "integer", "minimum": 1, "description": "With fires: the ordnance's own rounds, apart from the magazine, full again in each battle. An ordnance shot uses a round, not a bullet; out of rounds, the weapon fires bullets. Without it, the magazine is the ordnance. Needs \"weapon_kinds\" in qm_features." }
       }
     },
+
+    "weapon_kind": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "like": { "$ref": "#/definitions/vanilla_weapon", "description": "A game weapon whose behaviour the kind starts from: every property below as that weapon has it (the Boys rifle's charges and heavy hits, the Sten Mk VI's quiet shots). The kind's own keys go on top." },
+        "ammo": { "$ref": "#/definitions/ammo_mode" },
+        "when_empty": { "$ref": "#/definitions/when_empty" },
+        "heavy_hits": { "$ref": "#/definitions/heavy_hits" },
+        "suppressed": { "$ref": "#/definitions/suppressed" },
+        "reveal_chance": { "$ref": "#/definitions/reveal_chance" },
+        "casing": { "$ref": "#/definitions/casing" },
+        "pellets": { "type": "boolean", "description": "A shotgun's spread: a miss leaves four tracers and no dirt splash. The game's: the shotgun. Needs \"weapon_kinds\" in qm_features." },
+        "tracer": { "$ref": "#/definitions/tracer" },
+        "miss_morale": { "type": "boolean", "description": "A miss shakes the target's morale. The game's: AT rifles. Needs \"weapon_kinds\" in qm_features." },
+        "breaks_trees": { "type": "boolean", "description": "A miss that hits a tree breaks it. The game's: AT rifles. Needs \"weapon_kinds\" in qm_features." },
+        "vehicle_burst": { "type": "string", "description": "The explosion a hit on a vehicle sets off: one of the game's (frag, contact, at_grenade, rifle_grenade, mortar, faust, artillery, heavy_mortar, bomb, strafe, or their game names such as flakExplosion and pzExplosion), an [[explosions]] id of this faction, or \"none\". The game's: flakExplosion for the Boys rifle, pzExplosion for the PzB 39; heavy_hits = true brings flakExplosion. Needs \"weapon_kinds\" in qm_features." },
+        "gibs": { "type": "boolean", "description": "A kill can blow the target apart. The game's: AT rifles. Needs \"weapon_kinds\" in qm_features." },
+        "armor_hit": { "type": "boolean", "description": "A hit on armour plays the AT rifle's hit sound and sparks. The game's: AT rifles. Needs \"weapon_kinds\" in qm_features." },
+        "close_range": { "type": "boolean", "description": "A shotgun's range: much more accurate and twice the damage up close, weaker far off. The game's: the shotgun. Needs \"weapon_kinds\" in qm_features." },
+        "counts_as": { "$ref": "#/definitions/counts_as" },
+        "night_sight": { "type": "boolean", "description": "The IR StG 44's sight: sees through smoke, spots at night and spots hidden enemies and vehicles. The game's: the IR StG 44. Needs \"weapon_kinds\" in qm_features." },
+        "fires": { "type": "string", "description": "An [[ordnance]] id: a shot leaves as that ordnance towards the target, spread by the shooter's skill, in place of a bullet. A thrown one is lobbed (impact = true makes it go off where it lands); a rifle one flies flat, as a rifle grenade. Needs \"weapon_kinds\" in qm_features." },
+        "fires_chance": { "type": "number", "minimum": 0, "maximum": 100, "description": "With fires: the share of shots in percent that leave as the ordnance; the rest are bullets. All of them without it. Needs \"weapon_kinds\" in qm_features." },
+        "fires_ammo": { "type": "integer", "minimum": 1, "description": "With fires: the ordnance's own rounds, apart from the magazine, full again in each battle. An ordnance shot uses a round, not a bullet; out of rounds, the weapon fires bullets. Without it, the magazine is the ordnance. Needs \"weapon_kinds\" in qm_features." }
+      }
+    },
+    "ammo_mode": {
+      "enum": ["magazine", "charges"],
+      "description": "Where the weapon's shots come from. \"magazine\": its own ammo and maxAmmo, refilled by reloading. \"charges\": the shots a soldier gets with an AT rifle he picks up, as the game's AT rifles do; only for AT rifles. The game's: charges for AT rifles, magazine for the rest. Setting it alone also sets when_empty (reload with a magazine, switch_back with charges). Needs \"weapon_kinds\" in qm_features."
+    },
+    "when_empty": {
+      "enum": ["reload", "switch_back"],
+      "description": "What a soldier does when the weapon is empty. \"reload\", or \"switch_back\" to the gun he had before he picked up an AT rifle (a soldier with none reloads). Weapons on charges always switch back. Needs \"weapon_kinds\" in qm_features."
+    },
+    "side_word": { "enum": ["allied", "axis", "both"] },
+    "game_ordnance": {
+      "enum": ["frag", "loot_frag", "contact_frag", "at_grenade", "molotov", "blendkorper", "smoke", "red_smoke", "pink_smoke", "grey_smoke", "purple_smoke", "yellow_smoke", "blue_smoke", "flare", "kitchen_sink", "rifle_grenade", "mortar", "artillery", "bombing", "strafing", "supply_drop"],
+      "description": "One of the game's ordnance: every grenade it throws (frag, loot_frag, contact_frag, at_grenade, molotov, blendkorper, the smoke grenades, flare, kitchen_sink), the rifle grenade, mortar rounds, artillery barrages, bombing and strafing runs, and supply drops."
+    },
+    "side_half": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The other side of the game, in the same file: its own keys only. What both sides share (weapons, kinds, ordnance, explosions, images, sounds, text, pools, hooks) stays at the top level. Needs \"faction_sides\" in qm_features.",
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "description": "This side's name. The faction's name unless set." },
+        "side_name": { "$ref": "#/properties/side_name" },
+        "description": { "$ref": "#/properties/description" },
+        "units": { "$ref": "#/properties/units" },
+        "spawn_swap": { "$ref": "#/properties/spawn_swap" },
+        "classes": { "$ref": "#/properties/classes" },
+        "names": { "$ref": "#/properties/names" },
+        "voices": { "$ref": "#/properties/voices" },
+        "vehicles": { "$ref": "#/properties/vehicles" },
+        "skills": { "$ref": "#/properties/skills" },
+        "ranks": { "$ref": "#/properties/ranks" },
+        "intro": { "$ref": "#/properties/intro" }
+      }
+    },
+    "casing": {
+      "enum": ["shell", "small_shell", "big_shell", "shotgun_shell", "none"],
+      "description": "The casing each shot drops. The game's: a small shell for SMGs, a big one for AT rifles, the shotgun's own, a shell for the rest. Needs \"weapon_kinds\" in qm_features."
+    },
+    "tracer": {
+      "enum": ["normal", "red", "armor_piercing", "incendiary", "heavy"],
+      "description": "The tracer a miss leaves (special ammo keeps its own). The game's: heavy for AT rifles, normal for the rest. Needs \"weapon_kinds\" in qm_features."
+    },
+    "counts_as": {
+      "enum": ["smg", "lmg", "rifle"],
+      "description": "The role the game's SMG and LMG checks see: an SMG's accuracy up close, an LMG's at long range and its assistant gunner, the AI's squad role. The game's: the weapon's class. Needs \"weapon_kinds\" in qm_features."
+    },
+    "heavy_hits": { "type": "boolean", "description": "The Boys rifle's hits: a shot smashes the light cover it strikes, and a hit on a vehicle bursts. Needs \"weapon_traits\" in qm_features." },
+    "suppressed": { "type": "boolean", "description": "The Sten Mk VI's rule: firing does not always break the stealth or camo buff. Each shot gives the shooter away at reveal_chance percent per enemy who sees him. Needs \"weapon_traits\" in qm_features." },
+    "reveal_chance": { "type": "number", "minimum": 0, "maximum": 100, "description": "With suppressed: the chance in percent, per enemy who sees the shooter, that a shot gives him away. The game's is 5. Needs \"weapon_traits\" in qm_features." },
 
     "class": {
       "type": "object",
@@ -267,11 +463,95 @@
         "debris": { "$ref": "#/definitions/path", "description": "Name prefix: vehicles/t34/debris loads debris1.png, ..." },
         "parts": {
           "type": "object",
-          "description": "Other sprites, by the part of the game name after the tag (SecondTurret1 = ...).",
+          "description": "Other sprites, by the part of the game name after the tag: SecondTurret = ... on the halfTrack replaces halfTrackSecondTurret.",
           "additionalProperties": { "$ref": "#/definitions/path" }
         },
         "call_signs": { "$ref": "#/definitions/name_list", "description": "Call signs this vehicle gets when it spawns (Allied vehicles)." },
         "call_signs_file": { "$ref": "#/definitions/path" }
+      }
+    },
+    "explosion_preset": {
+      "enum": ["frag", "contact", "at_grenade", "rifle_grenade", "mortar", "faust", "artillery", "heavy_mortar", "bomb", "strafe",
+        "mineExplosion", "contactExplosion", "atGrenadeExplosion", "rifleGrenadeExplosion", "mortarExplosion", "faustExplosion",
+        "artyExplosion", "hvyExplosion", "bombExplosion", "flakExplosion"],
+      "description": "One of the game's explosions, by name or by the game's tag."
+    },
+    "local_id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+    "explosion": {
+      "type": "object",
+      "required": ["id"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/definitions/local_id", "description": "Its name in this faction." },
+        "based_on": { "$ref": "#/definitions/explosion_preset", "description": "The explosion whose numbers it starts from (frag when left out)." },
+        "size": { "type": "number", "minimum": 0, "description": "How big it is drawn." },
+        "at_radius": { "type": "number", "minimum": 0, "description": "Reach against vehicles." },
+        "at_damage": { "type": "number", "minimum": 0, "description": "Damage to vehicles." },
+        "blast_radius": { "type": "number", "minimum": 0, "description": "Reach of the blast." },
+        "blast_damage": { "type": "number", "minimum": 0, "description": "Damage of the blast." },
+        "demo_radius": { "type": "number", "minimum": 0, "description": "Reach against buildings." },
+        "frag_radius": { "type": "number", "minimum": 0, "description": "Reach of the fragments." },
+        "frag_damage": { "type": "number", "minimum": 0, "description": "Damage of the fragments." },
+        "morale_hit": { "type": "number", "minimum": 0, "description": "Morale lost nearby." },
+        "stun_range": { "type": "number", "minimum": 0, "description": "Reach of the stun." },
+        "stun_time": { "type": "number", "minimum": 0, "description": "Longest stun, in seconds." },
+        "crater": { "type": "number", "minimum": 0, "description": "Crater size; 0 for none." }
+      }
+    },
+    "ordnance": {
+      "type": "object",
+      "oneOf": [{ "required": ["id"] }, { "required": ["reskin"] }],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/definitions/local_id", "description": "Its name in this faction. Leave it out for a reskin." },
+        "reskin": { "$ref": "#/definitions/game_grenade", "description": "One of the game's grenades, drawn and described with this entry's sprite, pack_sprite, loot_sprite and description instead of adding a new one. It changes the grenade wherever the game uses it." },
+        "pack_sprite": { "$ref": "#/definitions/path", "description": "A reskin: the image on a soldier who carries it." },
+        "loot_sprite": { "$ref": "#/definitions/path", "description": "A reskin: the image of its loot on the ground. The anti-tank grenade, molotov and Blendkorper fly as their loot image, so for them sprite and loot_sprite are one image." },
+        "kind": { "enum": ["thrown", "rifle", "mortar", "artillery", "airstrike", "drop"], "description": "thrown: a hand grenade, as the frag (the default); rifle: fired from a rifle that takes rifle grenades, as the game's rifle grenade; mortar: a soldier's mortar rounds; artillery: a barrage called on a spot; airstrike: a plane's bombs or strafing on a spot; drop: a supply crate by parachute." },
+        "name": { "type": "string", "description": "Shown on a fourth skill's button." },
+        "description": { "type": "string", "description": "Shown on a fourth skill's button, after the name. A reskin: the text over its loot." },
+        "sprite": { "$ref": "#/definitions/path", "description": "The image it flies as. Required for a thrown or rifle grenade; a mortar round or a shell shows only its blast. A reskin: the image the game's grenade flies as." },
+        "shots": { "type": "integer", "minimum": 1, "description": "A mortar's rounds each time (6), a barrage's shells (5), an air strike's hits (1) or the items in a drop's crate (3)." },
+        "plane": { "$ref": "#/definitions/path", "description": "An air strike or a drop: the plane that flies over (the game's unless set)." },
+        "contents": { "type": "array", "items": { "type": "string" }, "description": "A drop: the game's loot names its crate holds, such as loot_medPack or loot_ration (the game's own mix unless set)." },
+        "spread": { "type": "number", "minimum": 0, "description": "How far each round or shell lands from the last (150 for a mortar, 250 for artillery)." },
+        "explosion": { "type": "string", "description": "An explosion of this faction by id, one of the game's (frag when left out; rifle_grenade for a rifle grenade), or one of the game's grenade effects (smoke, red_smoke, pink_smoke, grey_smoke, purple_smoke, yellow_smoke, blue_smoke, molotov, blendkorper; needs \"ordnance_effects\" in qm_features)." },
+        "range": { "type": "number", "minimum": 0, "description": "The farthest a soldier throws or fires it (1000, as the game's)." },
+        "cooldown": { "type": "number", "minimum": 0, "description": "Seconds before the class skill is ready again (120; 180 for a rifle grenade)." },
+        "tension": { "type": "number", "minimum": 0, "description": "The battle's tension after the blast (40; a rifle grenade leaves it unless set)." },
+        "skill": {
+          "type": "object",
+          "required": ["class", "slot"],
+          "additionalProperties": false,
+          "description": "The class skill that throws it instead of what it did.",
+          "properties": {
+            "class": { "$ref": "#/definitions/spec" },
+            "slot": { "type": "integer", "minimum": 1, "description": "1 to 3: one of the class's own skills; 4 and up: new skills above them." },
+            "unlock": { "type": "integer", "minimum": 1, "description": "The skill level it comes with (its slot, or 3 for a new skill, unless set)." },
+            "icon": { "$ref": "#/definitions/path", "description": "The skill's icon (a game skill's own, a replaced one too, or the sprite on the blank skill button for a new one, unless set)." },
+            "backdrop": { "type": "boolean", "description": "The icon is drawn on the game's blank skill button, as the game's skill icons are." },
+            "sprite_icon": { "type": "boolean", "description": "The grenade's sprite, on the game's blank skill button, is the icon." }
+          }
+        },
+        "spin": { "type": "number", "minimum": 0, "description": "A thrown grenade: how fast it turns in the air (the frag's is 0.1 to 1 at random). 0 flies pointing the way it was thrown." },
+        "speed": { "type": "number", "exclusiveMinimum": 0, "description": "A thrown or rifle grenade: how fast it flies. The game's grenades fly at 500, its contact grenade at 600. Needs \"ordnance_speed\" in qm_features." },
+        "impact": { "type": "boolean", "description": "A thrown grenade: it goes off where it lands or where it hits a wall, as an impact fuse, instead of bouncing." },
+        "replaces": {
+          "description": "What of the game's it stands in for: one name, a list of names, or a table of name = side (\"allied\", \"axis\" or \"both\"). Thrown names take a thrown or rifle grenade (a rifle one flies flat); rifle_grenade a rifle one; mortar, artillery, bombing, strafing and supply_drop their own kinds. A side another mod's faction holds keeps its own. Needs \"ordnance_replaces\" in qm_features.",
+          "oneOf": [
+            { "$ref": "#/definitions/game_ordnance" },
+            { "type": "array", "items": { "$ref": "#/definitions/game_ordnance" }, "minItems": 1 },
+            { "type": "object", "propertyNames": { "$ref": "#/definitions/game_ordnance" }, "additionalProperties": { "$ref": "#/definitions/side_word" } }
+          ]
+        },
+        "sides": { "$ref": "#/definitions/side_word", "description": "Whose, for a replaces name or list: \"allied\", \"axis\" or \"both\". The sides the faction holds unless set. Needs \"ordnance_replaces\" in qm_features." },
+        "replaces_frag": { "type": "boolean", "description": "The older spelling of replaces = \"frag\" (true: the sides the faction holds)." },
+        "replaces_rifle_grenade": { "type": "boolean", "description": "The older spelling of replaces = \"rifle_grenade\" (true: the sides the faction holds)." },
+        "replaces_mortar": { "type": "boolean", "description": "The older spelling of replaces = \"mortar\" (true: the sides the faction holds)." },
+        "replaces_artillery": { "type": "boolean", "description": "The older spelling of replaces = \"artillery\" (true: the sides the faction holds)." },
+        "replaces_bombing": { "type": "boolean", "description": "The older spelling of replaces = \"bombing\" (true: the sides the faction holds)." },
+        "replaces_strafing": { "type": "boolean", "description": "The older spelling of replaces = \"strafing\" (true: the sides the faction holds)." },
+        "replaces_drop": { "type": "boolean", "description": "The older spelling of replaces = \"supply_drop\" (true: the sides the faction holds)." }
       }
     }
   }

@@ -9,5 +9,5 @@
   "tags": ["Faction", "Eastern Front", "Red Army"],
   "load_priority": 50,
   "game_version": ">=0.5.3",
-  "qm_features": ["short_patches", "apply_as", "ordnance", "skills", "ranks", "faction_sprite_sizes"]
+  "qm_features": ["ordnance", "skills", "ranks", "faction_sprite_sizes", "sprite_transforms", "grenade_reskins", "faction_intro", "promotion_skill", "weapon_traits", "weapon_kinds", "ordnance_replaces", "ordnance_speed"]
 }
